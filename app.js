@@ -32,6 +32,7 @@ const arr_router = [
       "daftar_seller",
       "daftar_bank",
       "bank_transfer",
+      "request_deposit",
     ],
   },
 ];

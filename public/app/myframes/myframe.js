@@ -67,7 +67,7 @@ let my_modal = (i) => {
       },
       formSubmit: {
         text: i.btn_label,
-        btnClass: "btn-primary",
+        btnClass: i.btn_class != undefined ? i.btn_class : "btn-primary",
         action: function () {
           return i.callback();
         },
@@ -730,6 +730,13 @@ function select(i) {
               <select class="form-control js-example-tags" name="${i.id_name}" id="${i.id_name}" placeholder="${i.placeholder}" $>
                 ${i.option}
               </select>
+          </div>`;
+}
+
+function textarea(i) {
+  return `<div class="form-group">
+            <label>${i.label}</label>
+            <textarea class="form-control" name="${i.id_name}" id="${i.id_name}" placeholder="${i.placeholder}" style="resize: none;" rows="5">${i.value}</textarea>
           </div>`;
 }
 

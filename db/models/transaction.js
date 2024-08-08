@@ -21,6 +21,9 @@ module.exports = (sequelize, DataTypes) => {
       // Riwayat_transaksi.hasMany(models.Amra_rental_fee, {
       //     foreignKey: "riwayatTransaksiId",
       // });
+      Transaction.hasMany(models.Request_deposit, {
+        foreignKey: "transaction_id",
+      });
       Transaction.hasMany(models.Transaction_prabayar, {
         foreignKey: "transaction_id",
       });

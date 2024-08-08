@@ -12,6 +12,9 @@ module.exports = (sequelize, DataTypes) => {
       Bank_transfer.belongsTo(models.Bank, {
         foreignKey: "bank_id",
       });
+      Bank_transfer.hasMany(models.Request_deposit, {
+        foreignKey: "bank_transfer_id",
+      });
     }
   }
   Bank_transfer.init(
