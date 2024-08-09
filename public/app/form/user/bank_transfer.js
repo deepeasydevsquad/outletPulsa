@@ -88,7 +88,58 @@ function add_new_bank_transfer() {
       url: Urls("Bank_transfer/info_add"),
       method: "get",
     },
-    function (e, xhr) {},
+    function (e, xhr) {
+      my_modal({
+        col: "5",
+        title: "Tambah Bank Transfer",
+        form_func: "form_add_update_bank_transfer",
+        btn_label: "Tambah Data Bank Transfer",
+        data: e.data,
+        // value: e.value,
+        callback: function () {
+          var valid = new my_validation();
+          valid
+            .body("bank_transfer")
+            .select_not_nol()
+            .withMessage("Anda Wajib Memilih Salah Satu Bank.")
+            .empty()
+            .withMessage("Bank Transfer Tidak Boleh Kosong!!!.");
+          valid
+            .body("name")
+            .empty()
+            .withMessage("Nama Akun Bank Tidak Boleh Kosong!!!.");
+          valid
+            .body("nomor")
+            .empty()
+            .withMessage("Nomor Akun Bank Tidak Boleh Kosong!!!.");
+          valid
+            .body("biaya_admin")
+            .empty()
+            .withMessage("Biaya Admin Tidak Boleh Kosong!!!.")
+            .empty_currency()
+            .withMessage("Biaya Admin idak Boleh Kosong!!!.");
+          if (valid.respose()) {
+            frown_alert(valid.message());
+            return false;
+          } else {
+            ajax_default(
+              {
+                url: Urls("Bank_transfer/add"),
+                method: "post",
+                form: true,
+              },
+              function (e, xhr) {
+                smile_alert(e.error_msg);
+                bank_transfer(100, "bank_transfer", "Bank_transfer");
+              },
+              function (status, errMsg) {
+                frown_alert(errMsg.error_msg);
+              }
+            );
+          }
+        },
+      });
+    },
     function (status, errMsg) {
       frown_alert(errMsg.error_msg);
     }

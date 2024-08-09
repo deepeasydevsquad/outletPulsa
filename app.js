@@ -33,6 +33,7 @@ const arr_router = [
       "daftar_bank",
       "bank_transfer",
       "request_deposit",
+      "daftar_deposit",
     ],
   },
 ];
