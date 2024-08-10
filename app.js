@@ -35,6 +35,7 @@ const arr_router = [
       "request_deposit",
       "daftar_deposit",
       "produk_pascabayar",
+      "daftar_transaksi",
     ],
   },
 ];

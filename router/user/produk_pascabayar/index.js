@@ -122,8 +122,6 @@ router.post(
   controllers.update_markup
 );
 
-//
-
 router.post(
   "/Users/Produk_pascabayar/update_markup_all_produk",
   [verify_token],
@@ -140,6 +138,13 @@ router.post(
     .withMessage("Nominal Markup > 2.001 Tidak Boleh Kosong")
     .trim(),
   controllers.update_markup_all_produk
+);
+
+//.
+router.get(
+  "/Users/Produk_pascabayar/update_harga_produk_pascabayar",
+  [verify_session],
+  controllers.update_harga_produk_pascabayar
 );
 
 module.exports = router;

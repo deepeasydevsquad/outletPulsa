@@ -1,5 +1,10 @@
 const moment = require("moment");
-const { sequelize, Produk_pascabayar } = require("../../../db/models");
+const {
+  sequelize,
+  Produk_pascabayar,
+  Iak_prabayar_produk,
+  Iak_pascabayar_product,
+} = require("../../../db/models");
 const { write_log } = require("../../../helpers/user/write_log");
 const {
   info_produk_pascabayar,
@@ -178,6 +183,116 @@ class Model_cud {
       this.state = false;
     }
   }
+
+  async update_harga_produk_pascabayar() {
+    // initialize general property
+    await this.initialize();
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    const body = this.req.body;
+    // insert process
+    try {
+      var list_produk_iak = {};
+      await Iak_pascabayar_product.findAll({
+        attributes: ["fee", "komisi", "produk_pascabayar_id"],
+        where: {
+          status: "active",
+        },
+        include: [
+          {
+            require: true,
+            model: Produk_pascabayar,
+          },
+        ],
+      }).then(async (tripay) => {
+        var i = 0;
+        await Promise.all(
+          await tripay.map(async (a) => {
+            list_produk_iak[i] = {
+              id: a.produk_pascabayar_id,
+              fee: a.fee,
+              komisi: a.komisi,
+            };
+            i++;
+          })
+        );
+      });
+
+      for (let x in list_produk_iak) {
+        await Produk_pascabayar.update(
+          {
+            fee: list_produk_iak[x].fee,
+            comission: list_produk_iak[x].komisi,
+            updatedAt: myDate,
+          },
+          {
+            where: { id: list_produk_iak[x].id },
+          }
+        );
+      }
+
+      // write log message
+      this.message = `Memperbaharui Data Harga Seluruh Produk Pascabayar `;
+    } catch (error) {
+      this.state = false;
+    }
+  }
+
+  // // const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+  // await Produk_pascabayar.findAll({
+  //   attributes: ["id", "fee", "comission"],
+  // }).then(async (value) => {
+  //   await Promise.all(
+  //     value.map(async (e) => {
+  //       // if (list_produk_iak[e.id] !== undefined) {
+  //       //   await Produk_pascabayar.update(
+  //       //     {
+  //       //       fee: list_produk_iak[e.id].fee,
+  //       //       comission: list_produk_iak[e.id].komisi,
+  //       //       updatedAt: myDate,
+  //       //     },
+  //       //     {
+  //       //       where: { id: e.id },
+  //       //     }
+  //       //   );
+  //       // }
+  //     })
+  //   ).then((x) => {
+  //     res.status(200).json({
+  //       msg: "Proses Update Harga Produk Pascabayar berhasil dilakukan.",
+  //     });
+  //   });
+  // });
+  // var markup = [];
+  // await Produk_pascabayar.findAll({
+  //   attributes: ["id", "comission"],
+  // }).then(async (value) => {
+  //   var i = 0;
+  //   await Promise.all(
+  //     value.map(async (e) => {
+  //       if (e.comission >= 1 && e.comission <= 1000) {
+  //         markup[i] = { id: e.id, markup: nominal_1 };
+  //       } else if (e.comission >= 1001 && e.comission <= 2000) {
+  //         markup[i] = { id: e.id, markup: nominal_2 };
+  //       } else if (e.comission >= 2001) {
+  //         markup[i] = { id: e.id, markup: nominal_3 };
+  //       }
+  //       i++;
+  //     })
+  //   );
+  // });
+  // await Promise.all(
+  //   markup.map(async (a) => {
+  //     await Produk_pascabayar.update(
+  //       {
+  //         outletFee: a.markup,
+  //         updatedAt: myDate,
+  //       },
+  //       {
+  //         where: { id: a.id },
+  //       }
+  //     );
+  //   })
+  // );
 
   async response() {
     if (this.state) {

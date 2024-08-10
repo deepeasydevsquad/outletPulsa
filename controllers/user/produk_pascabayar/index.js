@@ -264,4 +264,33 @@ controllers.update_markup_all_produk = async (req, res) => {
   }
 };
 
+//
+/**
+ * Fungsi untuk melakukan update markup all produk pascabayar
+ **/
+controllers.update_harga_produk_pascabayar = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    // return ERROR
+    const err_msg = await error_msg(errors);
+    res.status(400).json({ error: true, error_msg: err_msg });
+  } else {
+    const model_cud = new Model_cud(req);
+    // delete process
+    await model_cud.update_harga_produk_pascabayar();
+    // get response
+    if (await model_cud.response()) {
+      res.status(200).json({
+        error: false,
+        error_msg: "Proses Update Harga Produk Pascabayar berhasil dilakukan",
+      });
+    } else {
+      res.status(400).json({
+        error: true,
+        error_msg: "Proses Update Harga Produk Pascabayar gagal dilakukan.",
+      });
+    }
+  }
+};
+
 module.exports = controllers;

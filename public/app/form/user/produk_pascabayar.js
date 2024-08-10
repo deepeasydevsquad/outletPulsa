@@ -525,3 +525,20 @@ function form_update_markup_all_produk_pascabayar() {
                 </form>`;
   return html;
 }
+
+function update_harga_produk_pascabayar() {
+  ajax_default(
+    {
+      url: Urls("Produk_pascabayar/update_harga_produk_pascabayar"),
+      method: "get",
+      loader: true,
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+      produk_pascabayar(100, "produk_pascabayar", "Produk_pascabayar");
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.error_msg);
+    }
+  );
+}
