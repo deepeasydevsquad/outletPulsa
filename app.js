@@ -34,6 +34,7 @@ const arr_router = [
       "bank_transfer",
       "request_deposit",
       "daftar_deposit",
+      "produk_pascabayar",
     ],
   },
 ];
