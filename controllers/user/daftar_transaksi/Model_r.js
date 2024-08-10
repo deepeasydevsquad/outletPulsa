@@ -26,15 +26,9 @@ class Model_r {
     var where = {};
     if (body.search != undefined && body.search != "") {
       where = {
-        [Op.or]: [
-          { kode: { [Op.like]: "%" + body.search + "%" } },
-          // { name: { [Op.like]: "%" + body.search + "%" } },
-        ],
+        [Op.or]: [{ kode: { [Op.like]: "%" + body.search + "%" } }],
       };
     }
-
-    // beli_produk_prabayar
-    // beli_produk_pascabayar
 
     var where_transaksi_produk = {};
     if (
@@ -46,10 +40,6 @@ class Model_r {
         status: body.status_transaksi,
       };
     }
-
-    console.log("+++++++++++++++++++++++where_transaksi_produk");
-    console.log(where_transaksi_produk);
-    console.log("+++++++++++++++++++++++where_transaksi_produk");
 
     where = {
       ...where,
@@ -80,7 +70,6 @@ class Model_r {
       {
         require: false,
         model: Transaction_prabayar,
-        //where: where_transaksi_produk,
         attributes: [
           "nomor_tujuan",
           "purchase_price",
@@ -106,7 +95,6 @@ class Model_r {
       {
         require: false,
         model: Transaction_pascabayar,
-        //where: where_transaksi_produk,
         attributes: [
           "nomor_tujuan",
           "nominal",
@@ -210,107 +198,11 @@ class Model_r {
       });
     }
 
-    // if (server_id.length > 0) {
-    //   for (let x in server_id) {
-    //     if (x == 1) {
-    //       let q_total_produk = await Iak_prabayar_produk.findAndCountAll();
-    //       let total_produk = await q_total_produk.count;
-    //       list[server_id[x]].total_produk = total_produk;
-
-    //       let q_konek = await Iak_prabayar_produk.findAndCountAll({
-    //         where: { produk_id: { [Op.ne]: null } },
-    //       });
-    //       let total_konek = await q_konek.count;
-    //       list[server_id[x]].total_produk_terkoneksi = total_konek;
-
-    //       let q_belum_konek = await Iak_prabayar_produk.findAndCountAll({
-    //         where: { produk_id: { [Op.eq]: null } },
-    //       });
-    //       let total_belum_konek = await q_belum_konek.count;
-    //       list[server_id[x]].total_produk_belum_terkoneksi = total_belum_konek;
-
-    //       //total_produk_belum_terkoneksi: 0,
-    //     } else if (x == 2) {
-    //       let q_total_produk = await Tripay_prabayar_produk.findAndCountAll();
-    //       let total_produk = await q_total_produk.count;
-    //       list[server_id[x]].total_produk = total_produk;
-
-    //       let q_konek = await Tripay_prabayar_produk.findAndCountAll({
-    //         where: { produk_id: { [Op.ne]: null } },
-    //       });
-    //       let total_konek = await q_konek.count;
-    //       list[server_id[x]].total_produk_terkoneksi = total_konek;
-
-    //       let q_belum_konek = await Tripay_prabayar_produk.findAndCountAll({
-    //         where: { produk_id: { [Op.eq]: null } },
-    //       });
-    //       let total_belum_konek = await q_belum_konek.count;
-    //       list[server_id[x]].total_produk_belum_terkoneksi = total_belum_konek;
-    //     } else if (x == 3) {
-    //       let q_total_produk = await Digiflazz_product.findAndCountAll();
-    //       let total_produk = await q_total_produk.count;
-    //       list[server_id[x]].total_produk = total_produk;
-
-    //       let q_konek = await Digiflazz_product.findAndCountAll({
-    //         where: { produk_id: { [Op.ne]: null } },
-    //       });
-    //       let total_konek = await q_konek.count;
-    //       list[server_id[x]].total_produk_terkoneksi = total_konek;
-
-    //       let q_belum_konek = await Digiflazz_product.findAndCountAll({
-    //         where: { produk_id: { [Op.eq]: null } },
-    //       });
-    //       let total_belum_konek = await q_belum_konek.count;
-    //       list[server_id[x]].total_produk_belum_terkoneksi = total_belum_konek;
-    //     }
-    //   }
-    // }
-
     return {
       data: list,
       total: total,
     };
   }
-
-  // async info_edit() {
-  //   const body = this.req.body;
-  //   var data = {};
-  //   try {
-  //     await Server.findOne({
-  //       where: { id: body.id },
-  //     }).then(async (val) => {
-  //       if (val) {
-  //         data["id"] = val.id;
-  //         data["kode"] = val.kode;
-  //         data["name"] = val.name;
-  //       }
-  //     });
-  //     return { error: false, data: data };
-  //   } catch (error) {
-  //     return { error: true };
-  //   }
-  // }
-
-  // async info_server() {
-  //   const body = this.req.body;
-  //   var data = {};
-  //   try {
-  //     await Server.findOne({
-  //       where: { id: body.id },
-  //     }).then(async (val) => {
-  //       if (val) {
-  //         data["id"] = val.id;
-  //         data["kode"] = val.kode;
-  //         data["name"] = val.name;
-  //         data["status"] = val.status;
-  //       }
-  //     });
-
-  //     return { error: false, data: data };
-  //   } catch (error) {
-  //     return { error: true };
-  //   }
-  // }
 }
 
 module.exports = Model_r;
