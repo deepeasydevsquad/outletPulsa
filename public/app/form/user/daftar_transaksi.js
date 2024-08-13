@@ -67,13 +67,19 @@ function List_daftar_transaksi(JSONData) {
       value: "<b>#" + json.produk_info.kode + "</b>",
     },
     { title: "NAMA PRODUK", value: json.produk_info.name },
-    { title: "TIPE PRODUK", value: json.produk_info.tipe },
+    {
+      title: "TIPE PRODUK",
+      value:
+        json.produk_info.tipe == "pascabayar"
+          ? `<b>PASCABAYAR</b>`
+          : "<b>PRABAYAR</b>",
+    },
   ];
 
   var obj_info_member = [
     {
       title: "KODE MEMBER",
-      value: json.member_info.kode,
+      value: "<b>#" + json.member_info.kode + "</b>",
     },
     {
       title: "NAMA MEMBER",
@@ -84,87 +90,19 @@ function List_daftar_transaksi(JSONData) {
       value: json.member_info.whatsapp_number,
     },
   ];
-
+  var status = "";
   var obj_info_transaksi = [];
   if (Object.keys(json.transaction_prabayar).length > 0) {
-    var status = "";
-    if (json.transaction_prabayar.status == "sukses") {
-      status = `<span style="color:green;font-weight:bold;">SUKSES</span>`;
-    } else if (json.transaction_prabayar.status == "gagal") {
-      status = `<span style="color:green;font-weight:bold;">GAGAL</span>`;
-    } else if (json.transaction_prabayar.status == "proses") {
-      status = `<span style="color:orange;font-weight:bold;">PROSES</span>`;
-    }
+    var proses = proses_transaksi_prabayar(json);
 
-    btn[0] = btnPrimary({
-      title: "Periksa Ulang Transaksi",
-      onClick: ` onclick="recheck_transaction('${json.id}')" `,
-      icon: "fas fa-check-double",
-    });
-
-    if (json.transaction_prabayar.status != "proses") {
-      btn[1] = btnDanger({
-        title: "Delete Transaksi",
-        onClick: ` onclick="delete_transaksi('${json.id}')" `,
-        icon: "fas fa-times",
-      });
-    }
-
-    obj_info_transaksi = [
-      {
-        title: "STATUS",
-        value: status,
-      },
-      {
-        title: "NOMOR TUJUAN",
-        value: json.transaction_prabayar.nomor_tujuan,
-      },
-      {
-        title: "HARGA PEMBELIAN",
-        value: "Rp " + numberFormat(json.transaction_prabayar.purchase_price),
-      },
-      {
-        title: "HARGA PENJUALAN",
-        value: "Rp " + numberFormat(json.transaction_prabayar.selling_price),
-      },
-      {
-        title: "FEE",
-        value:
-          "Rp " +
-          numberFormat(
-            json.transaction_prabayar.fee_agen == null
-              ? 0
-              : json.transaction_prabayar.fee_agen
-          ),
-      },
-      {
-        title: "LABA",
-        value:
-          "Rp " +
-          numberFormat(
-            json.transaction_prabayar.laba == null
-              ? 0
-              : json.transaction_prabayar.laba
-          ),
-      },
-
-      {
-        title: "SERVER",
-        value:
-          "(" +
-          json.transaction_prabayar.kode_server +
-          ") " +
-          json.transaction_prabayar.name_server,
-      },
-      {
-        title: "SALDO SEBELUMNYA",
-        value: "Rp " + numberFormat(json.saldo_before),
-      },
-      {
-        title: "SALDO SESUDAHNYA",
-        value: "Rp " + numberFormat(json.saldo_after),
-      },
-    ];
+    obj_info_transaksi = proses.obj_info_transaksi;
+    status = proses.status;
+    btn = proses.btn;
+  } else if (Object.keys(json.transaction_pascabayar).length > 0) {
+    var proses = proses_transaksi_pascabayar(json);
+    obj_info_transaksi = proses.obj_info_transaksi;
+    status = proses.status;
+    btn = proses.btn;
   }
 
   var info_produk = simpleTableFunc(obj_info_produk, "40");
@@ -181,6 +119,180 @@ function List_daftar_transaksi(JSONData) {
   ]);
   return html;
 }
+
+function proses_transaksi_prabayar(json) {
+  var status = "";
+  if (json.transaction_prabayar.status == "sukses") {
+    status = `<span style="color:green;font-weight:bold;">SUKSES</span>`;
+  } else if (json.transaction_prabayar.status == "gagal") {
+    status = `<span style="color:green;font-weight:bold;">GAGAL</span>`;
+  } else if (json.transaction_prabayar.status == "proses") {
+    status = `<span style="color:orange;font-weight:bold;">PROSES</span>`;
+  }
+  var btn = [];
+  btn[0] = btnPrimary({
+    title: "Periksa Ulang Transaksi",
+    onClick: ` onclick="recheck_transaction('${json.id}')" `,
+    icon: "fas fa-check-double",
+  });
+
+  if (json.transaction_prabayar.status != "proses") {
+    btn[1] = btnDanger({
+      title: "Delete Transaksi",
+      onClick: ` onclick="delete_transaksi('${json.id}')" `,
+      icon: "fas fa-times",
+    });
+  }
+
+  var obj_info_transaksi = [
+    {
+      title: "STATUS",
+      value: status,
+    },
+    {
+      title: "NOMOR TUJUAN",
+      value: json.transaction_prabayar.nomor_tujuan,
+    },
+    {
+      title: "HARGA PEMBELIAN",
+      value: "Rp " + numberFormat(json.transaction_prabayar.purchase_price),
+    },
+    {
+      title: "HARGA PENJUALAN",
+      value: "Rp " + numberFormat(json.transaction_prabayar.selling_price),
+    },
+    {
+      title: "FEE",
+      value:
+        "Rp " +
+        numberFormat(
+          json.transaction_prabayar.fee_agen == null
+            ? 0
+            : json.transaction_prabayar.fee_agen
+        ),
+    },
+    {
+      title: "LABA",
+      value:
+        "Rp " +
+        numberFormat(
+          json.transaction_prabayar.laba == null
+            ? 0
+            : json.transaction_prabayar.laba
+        ),
+    },
+
+    {
+      title: "SERVER",
+      value:
+        "(" +
+        json.transaction_prabayar.kode_server +
+        ") " +
+        json.transaction_prabayar.name_server,
+    },
+    {
+      title: "SALDO SEBELUMNYA",
+      value: "Rp " + numberFormat(json.saldo_before),
+    },
+    {
+      title: "SALDO SESUDAHNYA",
+      value: "Rp " + numberFormat(json.saldo_after),
+    },
+  ];
+
+  return { obj_info_transaksi, btn, status };
+}
+
+function proses_transaksi_pascabayar(json) {
+  var status = "";
+  if (json.transaction_pascabayar.status == "sukses") {
+    status = `<span style="color:green;font-weight:bold;">SUKSES</span>`;
+  } else if (json.transaction_pascabayar.status == "gagal") {
+    status = `<span style="color:green;font-weight:bold;">GAGAL</span>`;
+  } else if (json.transaction_pascabayar.status == "proses") {
+    status = `<span style="color:orange;font-weight:bold;">PROSES</span>`;
+  }
+  var btn = [];
+  btn[0] = btnPrimary({
+    title: "Periksa Ulang Transaksi",
+    onClick: ` onclick="recheck_transaction('${json.id}')" `,
+    icon: "fas fa-check-double",
+  });
+
+  if (json.transaction_pascabayar.status != "proses") {
+    btn[1] = btnDanger({
+      title: "Delete Transaksi",
+      onClick: ` onclick="delete_transaksi('${json.id}')" `,
+      icon: "fas fa-times",
+    });
+  }
+
+  var obj_info_transaksi = [
+    {
+      title: "STATUS",
+      value: status,
+    },
+    {
+      title: "NOMOR TUJUAN",
+      value: json.transaction_pascabayar.nomor_tujuan,
+    },
+    {
+      title: "NOMINAL",
+      value: "Rp " + numberFormat(json.transaction_pascabayar.nominal),
+    },
+    {
+      title: "TOTAL NOMINAL",
+      value: "Rp " + numberFormat(json.transaction_pascabayar.total_nominal),
+    },
+    {
+      title: "ADMIN FEE",
+      value: "Rp " + numberFormat(json.transaction_pascabayar.admin_fee),
+    },
+    {
+      title: "KOMISI",
+      value: "Rp " + numberFormat(json.transaction_pascabayar.comission),
+    },
+    {
+      title: "OUTLET KOMISI",
+      value: "Rp " + numberFormat(json.transaction_pascabayar.outlet_comission),
+    },
+    {
+      title: "MEMBER KOMISI",
+      value: "Rp " + numberFormat(json.transaction_pascabayar.member_comission),
+    },
+    {
+      title: "NOREF",
+      value: json.transaction_pascabayar.noref,
+    },
+    {
+      title: "SERVER",
+      value:
+        " (" +
+        json.transaction_pascabayar.kode_server +
+        ") " +
+        json.transaction_pascabayar.name_server,
+    },
+  ];
+
+  return { obj_info_transaksi, btn, status };
+}
+
+// {
+//   "nomor_tujuan": "530000000001",
+//   "nominal": 300000,
+//   "total_nominal": 302750,
+//   "admin_fee": 2750,
+//   "comission": 1800,
+//   "outlet_comission": 200,
+//   "member_comission": 1600,
+//   "noref": "1600",
+//   "kode_agen": null,
+//   "laba": 0,
+//   "fee_agen": 0,
+//   "status": "sukses",
+//   "kode_server": "IAK",
+//   "name_server": "IAK"
+// }
 
 function delete_transaksi(id) {
   $.confirm({

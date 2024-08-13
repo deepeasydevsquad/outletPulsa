@@ -492,3 +492,19 @@ function form_sinkronisasi_produk_digiflaz(id, JSONData) {
               </script>`;
   return form;
 }
+
+function update_produk_prabayar_digiflaz() {
+  ajax_default(
+    {
+      url: Urls("Digiflaz_prabayar/update_produk_digiflazz_prabayar"),
+      method: "get",
+      loader: true,
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.msg);
+    }
+  );
+}

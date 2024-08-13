@@ -233,3 +233,19 @@ function form_sinkronisasi_produk_tripay(id, JSONData) {
               </script>`;
   return form;
 }
+
+function update_produk_prabayar_tripay() {
+  ajax_default(
+    {
+      url: Urls("Tripay_prabayar/update_produk_prabayar_tripay"),
+      method: "get",
+      loader: true,
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.msg);
+    }
+  );
+}

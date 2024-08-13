@@ -23,10 +23,6 @@ class Model_cud {
     // initialize general property
     await this.initialize();
 
-    console.log("___________________1");
-    //console.log(error);
-    console.log("___________________1");
-
     const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
 
     const body = this.req.body;
@@ -46,9 +42,6 @@ class Model_cud {
       // message log
       this.message = `Menghapus Koneksi Produk Pascabayar IAK dengan kode Produk Pascabayar IAK : ${inf.kode}, nama produk Pascabayar IAK : ${inf.name} dan Id Produk Pascabayar IAK : ${body.id}`;
     } catch (error) {
-      console.log("___________________1");
-      console.log(error);
-      console.log("___________________1");
       this.state = false;
     }
   }

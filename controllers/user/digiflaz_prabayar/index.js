@@ -178,6 +178,23 @@ controllers.sinkronisasi_produk_digiflaz = async (req, res) => {
   }
 };
 
+controllers.update_produk_digiflazz_prabayar = async (req, res) => {
+  const model_r = new Model_r(req);
+  const process = await model_r.update_produk_digiflazz_prabayar();
+  // error checking
+  if (process.error) {
+    res.status(400).json({
+      error: true,
+      error_msg: "Proses Update Produk Pascabayar Digiflaz Berhasil Dilakukan",
+    });
+  } else {
+    res.status(200).json({
+      error: false,
+      error_msg: "Proses Update Produk Pascabayar Digiflaz Gagal Dilakukan",
+    });
+  }
+};
+
 // /**
 //  * Fungsi untuk mengambil info data server
 //  **/

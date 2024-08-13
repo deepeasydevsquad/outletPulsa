@@ -43,6 +43,12 @@ router.get(
   controllers.get_operator_tripay
 );
 
+router.get(
+  "/Users/Tripay_prabayar/update_produk_prabayar_tripay",
+  [verify_session],
+  controllers.update_produk_prabayar_tripay
+);
+
 router.post(
   "/Users/Tripay_prabayar/delete_koneksi",
   [verify_token],

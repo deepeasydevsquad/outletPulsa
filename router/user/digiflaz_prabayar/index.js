@@ -53,6 +53,13 @@ router.get(
   controllers.get_param_digiflaz
 );
 
+//
+router.get(
+  "/Users/Digiflaz_prabayar/update_produk_digiflazz_prabayar",
+  [verify_session],
+  controllers.update_produk_digiflazz_prabayar
+);
+
 router.post(
   "/Users/Digiflaz_prabayar/get_info_pilih_seller_manual",
   [verify_token],

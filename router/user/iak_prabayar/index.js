@@ -43,6 +43,12 @@ router.get(
   controllers.get_operator_iak
 );
 
+router.get(
+  "/Users/Iak_prabayar/update_produk_prabayar_iak",
+  [verify_session],
+  controllers.update_produk_prabayar_iak
+);
+
 router.post(
   "/Users/Iak_prabayar/delete_koneksi",
   [verify_token],

@@ -10,9 +10,12 @@ const {
 const { db_list_server } = require("../../../helpers/db_ops");
 const { info } = require("../../../helpers/user/iak_prabayar/index");
 
+const Iak = require("../../../library/iak");
+
 class Model_r {
   constructor(req) {
     this.req = req;
+    this.json;
   }
 
   // get data in server side
@@ -202,6 +205,120 @@ class Model_r {
       });
 
       return { error: false, data: list };
+    } catch (error) {
+      return { error: true };
+    }
+  }
+
+  async operator_types() {
+    var list = [];
+    await Iak_prabayar_operator.findAll({
+      attributes: ["id", "name"],
+      include: {
+        required: true,
+        model: Iak_prabayar_type,
+        attributes: ["type"],
+      },
+    }).then(async (e) => {
+      var i = 0;
+      await Promise.all(
+        await e.map(async (a) => {
+          list[i] = {
+            operator_id: a.id,
+            operator: a.name,
+            type: a.Iak_prabayar_type.type,
+          };
+          i++;
+        })
+      );
+    });
+
+    return list;
+  }
+
+  async kode_produk_iak() {
+    var list = [];
+    await Iak_prabayar_produk.findAll({
+      attributes: ["kode"],
+    }).then(async (e) => {
+      var i = 0;
+      await Promise.all(
+        await e.map(async (a) => {
+          list[i] = a.kode;
+          i++;
+        })
+      );
+    });
+    return list;
+  }
+
+  async update_produk_prabayar_iak() {
+    try {
+      const operator_type = await this.operator_types();
+      const kode_produk = await this.kode_produk_iak();
+      const iak = new Iak();
+
+      await operator_type.map(async (j) => {
+        await iak.get_product_prabayar_iak(
+          j.type,
+          j.operator,
+          j.operator_id,
+          async function (json) {
+            const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+            const dt = json.data;
+            const operator_id = json.operator_id;
+
+            if (dt != undefined) {
+              var data_insert = [];
+              var data_update = [];
+              var y = 0;
+              var z = 0;
+
+              for (let x in dt) {
+                if (!kode_produk.includes(dt[x].product_code)) {
+                  // insert
+                  data_insert[y] = {
+                    operator_id: operator_id,
+                    kode: dt[x].product_code,
+                    name: dt[x].product_nominal,
+                    price: dt[x].product_price,
+                    status: dt[x].status,
+                    createdAt: myDate,
+                    updatedAt: myDate,
+                  };
+                  y++;
+                } else {
+                  // update
+                  data_update[z] = {
+                    param: dt[x].product_code,
+                    data: {
+                      price: dt[x].product_price,
+                      status: dt[x].status,
+                      updatedAt: myDate,
+                    },
+                  };
+                  z++;
+                }
+              }
+
+              if (data_insert != undefined) {
+                for (let x in data_insert) {
+                  await Iak_prabayar_produk.create(data_insert[x]);
+                }
+              }
+
+              if (data_update != undefined) {
+                for (let x in data_update) {
+                  await Iak_prabayar_produk.update(data_update[x].data, {
+                    where: { kode: data_update[x].param },
+                  });
+                }
+              }
+            }
+          }
+        );
+      });
+      return { error: false };
     } catch (error) {
       return { error: true };
     }

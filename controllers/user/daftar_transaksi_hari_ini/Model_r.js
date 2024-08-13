@@ -18,6 +18,9 @@ class Model_r {
 
   // get data in server side
   async server_side() {
+    const TODAY_START = new Date().setHours(0, 0, 0, 0);
+    const NOW = new Date();
+
     const body = this.req.body;
     var limit = body.perpage;
     var page = 1;
@@ -46,6 +49,10 @@ class Model_r {
       ...where,
       ...{
         tipe: { [Op.in]: ["beli_produk_prabayar", "beli_produk_pascabayar"] },
+        createdAt: {
+          [Op.gte]: TODAY_START,
+          [Op.lte]: NOW,
+        },
       },
     };
 

@@ -8,6 +8,7 @@ const {
 } = require("../../../db/models");
 const { db_list_server } = require("../../../helpers/db_ops");
 const { info } = require("../../../helpers/user/iak_pascabayar/index");
+const Iak = require("../../../library/iak");
 
 class Model_r {
   constructor(req) {
@@ -99,7 +100,6 @@ class Model_r {
         );
       });
 
-      // convert array to object
       const tempListProdukPascabayarId = Object.assign(
         {},
         list_produk_pascabayar_id
@@ -169,9 +169,6 @@ class Model_r {
           })
         );
       });
-      // console.log("++++++++++++++list_produk_pascabayar_id");
-      // console.log(list_produk_pascabayar_id);
-      // console.log("++++++++++++++list_produk_pascabayar_id");
       var where = {};
       if (list_produk_pascabayar_id.length > 0) {
         where = { id: { [Op.notIn]: list_produk_pascabayar_id } };
@@ -200,11 +197,122 @@ class Model_r {
         );
       });
 
-      console.log("++++++++++++++list");
-      console.log(list);
-      console.log("++++++++++++++list");
-
       return { error: false, data: list };
+    } catch (error) {
+      return { error: true };
+    }
+  }
+
+  async iak_type() {
+    var type = [];
+    var list_type = {};
+    await Iak_pascabayar_type.findAll({
+      attributes: ["id", "type"],
+    }).then(async (e) => {
+      var i = 0;
+      await Promise.all(
+        await e.map(async (a) => {
+          type[i] = a.type;
+          list_type[a.type] = a.id;
+          i++;
+        })
+      );
+    });
+    return { type, list_type };
+  }
+
+  async iak_produk_pascabayar() {
+    var product = [];
+    await Iak_pascabayar_product.findAll({
+      attributes: ["code"],
+    }).then(async (e) => {
+      var j = 0;
+      await Promise.all(
+        await e.map(async (a) => {
+          product[j] = a.code;
+          j++;
+        })
+      );
+    });
+    return product;
+  }
+
+  async update_produk_pascabayar_iak() {
+    const iakType = await this.iak_type();
+    const type = iakType.type;
+    const list_type = iakType.list_type;
+    const product = await this.iak_produk_pascabayar();
+    const iak = new Iak();
+    try {
+      await iak.get_produk_pascabayar_iak(async (json) => {
+        var data = json.data.pasca;
+        const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+        var insertData = [];
+        await data.map(async (dat) => {
+          if (product.includes(dat.code)) {
+            // update data Produk Pascabayar
+            await Iak_pascabayar_product.update(
+              {
+                status: dat.status == 1 ? "active" : "non active",
+                fee: dat.fee,
+                komisi: dat.komisi,
+                updatedAt: myDate,
+              },
+              {
+                where: { code: dat.code },
+              }
+            );
+          } else {
+            if (insertData.includes(dat.code)) {
+              // update data Produk Pascabayar
+              await Iak_pascabayar_product.update(
+                {
+                  status: dat.status == 1 ? "active" : "non active",
+                  fee: dat.fee,
+                  komisi: dat.komisi,
+                  updatedAt: myDate,
+                },
+                {
+                  where: { code: dat.code },
+                }
+              );
+            } else {
+              // insert
+              if (type.includes(dat.type)) {
+                // insert
+                await Iak_pascabayar_product.create({
+                  code: dat.code,
+                  name: dat.name,
+                  status: dat.status == 1 ? "active" : "non active",
+                  fee: dat.fee,
+                  komisi: dat.komisi,
+                  type_id: list_type[dat.type],
+                  createdAt: myDate,
+                  updatedAt: myDate,
+                });
+              } else {
+                const i = await Iak_pascabayar_type.create({
+                  type: dat.type,
+                  createdAt: myDate,
+                  updatedAt: myDate,
+                });
+                // insert
+                await Iak_pascabayar_product.create({
+                  code: dat.code,
+                  name: dat.name,
+                  status: dat.status == 1 ? "active" : "non active",
+                  fee: dat.fee,
+                  komisi: dat.komisi,
+                  type_id: i.id,
+                  createdAt: myDate,
+                  updatedAt: myDate,
+                });
+              }
+            }
+          }
+        });
+      });
+      return { error: false };
     } catch (error) {
       return { error: true };
     }

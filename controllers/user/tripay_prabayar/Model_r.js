@@ -9,6 +9,7 @@ const {
 } = require("../../../db/models");
 const { db_list_server } = require("../../../helpers/db_ops");
 const { info } = require("../../../helpers/user/tripay_prabayar/index");
+const Tripay = require("../../../library/tripay");
 
 class Model_r {
   constructor(req) {
@@ -108,7 +109,6 @@ class Model_r {
         );
       });
 
-      // convert array to object
       const tempListProdukId = Object.assign({}, list_produk_id);
 
       if (Object.keys(tempListProdukId).length > 0) {
@@ -206,6 +206,69 @@ class Model_r {
       });
 
       return { error: false, data: list };
+    } catch (error) {
+      return { error: true };
+    }
+  }
+
+  async update_produk_prabayar_tripay() {
+    const tripay = new Tripay();
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    try {
+      await tripay.get_produk(async (json) => {
+        if (json.success == true) {
+          var operator_id = [];
+          await Tripay_prabayar_operator.findAll({
+            attributes: ["id"],
+          }).then(async (value) => {
+            var i = 0;
+            await Promise.all(
+              value.map(async (e) => {
+                operator_id[i] = e.id;
+                i++;
+              })
+            );
+          });
+          var data = json.data;
+          await Tripay_prabayar_produk.update(
+            {
+              status: "tidak tersedia",
+              updatedAt: myDate,
+            },
+            { where: {} }
+          );
+          await data.map(async (e) => {
+            const q_total = await Tripay_prabayar_produk.findAndCountAll({
+              where: { kode: e.code },
+            });
+            const total = await q_total.count;
+            if (total > 0) {
+              await Tripay_prabayar_produk.update(
+                {
+                  price: e.price,
+                  status: e.status == 1 ? "tersedia" : "tidak tersedia",
+                  updatedAt: myDate,
+                },
+                { where: { kode: e.code } }
+              );
+            } else {
+              if (operator_id.includes(e.pembelianoperator_id)) {
+                await Tripay_prabayar_produk.create({
+                  operator_id: e.pembelianoperator_id,
+                  kode: e.code,
+                  name: e.product_name,
+                  price: e.price,
+                  deskripsi: e.desc,
+                  status: e.status == 1 ? "tersedia" : "tidak tersedia",
+                  createdAt: myDate,
+                  updatedAt: myDate,
+                });
+              }
+            }
+          });
+        }
+      });
+      return { error: false };
     } catch (error) {
       return { error: true };
     }

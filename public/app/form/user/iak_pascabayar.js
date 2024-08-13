@@ -239,3 +239,19 @@ function form_sinkronisasi_produk_pascabayar_iak(id, JSONData) {
               </script>`;
   return form;
 }
+
+function update_produk_pascabayar_iak() {
+  ajax_default(
+    {
+      url: Urls("Iak_pascabayar/update_produk_pascabayar_iak"),
+      method: "get",
+      loader: true,
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.msg);
+    }
+  );
+}

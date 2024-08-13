@@ -9,10 +9,16 @@ const {
   Digiflazz_seller,
   Produk_prabayar,
   Digiflazz_sellers,
+  // Digiflazz_category,
+  // Digiflazz_brand,
+  // Digiflazz_type,
+  // Digiflazz_product,
   Operator,
 } = require("../../../db/models");
 const { db_list_server } = require("../../../helpers/db_ops");
 const { info } = require("../../../helpers/user/digiflaz_prabayar/index");
+
+const Digiflaz = require("../../../library/digiflaz");
 
 class Model_r {
   constructor(req) {
@@ -425,11 +431,446 @@ class Model_r {
 
       return { error: false, data: list };
     } catch (error) {
-      console.log("+++++++++++++++++error");
-      console.log(error);
-      console.log("+++++++++++++++++error");
       return { error: true };
     }
+  }
+
+  async update_produk_digiflazz_prabayar() {
+    const digiflaz = new Digiflaz();
+    // category
+    var category = [];
+    await Digiflazz_category.findAll({
+      attributes: ["id", "name"],
+    }).then(async (value) => {
+      await Promise.all(
+        value.map(async (e) => {
+          category[e.name.trim().replace(/\s/g, "_")] = e.id;
+        })
+      );
+    });
+    // brand
+    var brand = [];
+    await Digiflazz_brand.findAll({ attributes: ["id", "name"] }).then(
+      async (value) => {
+        await Promise.all(
+          value.map(async (e) => {
+            brand[e.name.trim().replace(/\s/g, "_")] = e.id;
+          })
+        );
+      }
+    );
+    // type
+    var type = [];
+    await Digiflazz_type.findAll({ attributes: ["id", "name"] }).then(
+      async (value) => {
+        var i = 0;
+        await Promise.all(
+          value.map(async (e) => {
+            type[e.name.trim().replace(/\s/g, "_")] = e.id;
+            i++;
+          })
+        );
+      }
+    );
+    // product
+    var product = [];
+    await Digiflazz_product.findAll({
+      attributes: ["id", "name"],
+      include: [
+        {
+          required: true,
+          model: Digiflazz_category,
+          attributes: ["name"],
+        },
+        {
+          required: true,
+          model: Digiflazz_brand,
+          attributes: ["name"],
+        },
+        {
+          required: true,
+          model: Digiflazz_type,
+          attributes: ["name"],
+        },
+      ],
+    }).then(async (value) => {
+      await Promise.all(
+        value.map(async (e) => {
+          var name = e.name.trim().replace(/\s/g, "_");
+          var category = e.Digiflazz_category.name.trim().replace(/\s/g, "_");
+          var brand = e.Digiflazz_brand.name.trim().replace(/\s/g, "_");
+          var type = e.Digiflazz_type.name.trim().replace(/\s/g, "_");
+          product[name + "+" + category + "+" + brand + "+" + type] = e.id;
+        })
+      );
+    });
+    // seller
+    var seller = [];
+    await Digiflazz_seller.findAll({ attributes: ["id", "name"] }).then(
+      async (value) => {
+        var i = 0;
+        await Promise.all(
+          value.map(async (e) => {
+            seller[e.name.trim().replace(/\s/g, "_")] = e.id;
+          })
+        );
+      }
+    );
+    // product seller
+    var product_seller = [];
+    await Digiflazz_seller_product.findAll({
+      attributes: ["id", "product_digiflazz_id", "seller_id", "buyerSkuKode"],
+      include: [
+        {
+          required: true,
+          model: Digiflazz_product,
+          attributes: ["name"],
+        },
+        {
+          required: true,
+          model: Digiflazz_seller,
+          attributes: ["name"],
+        },
+      ],
+    }).then(async (value) => {
+      var i = 0;
+      await Promise.all(
+        value.map(async (e) => {
+          if (product_seller[e.buyerSkuKode] == undefined) {
+            product_seller[e.buyerSkuKode] = e.id;
+          }
+        })
+      );
+    });
+
+    var newCategory = [];
+    var newBrand = [];
+    var newType = [];
+    var newSeller = [];
+    var newProduct = [];
+    var newProductSeller = [];
+    var updateProductSeller = [];
+
+    try {
+      await digiflaz.get_produk(async (re) => {
+        console.log("_________________________________");
+        console.log(re.data);
+        console.log("_________________________________");
+
+        var a = 1;
+        await Promise.all(
+          re.data.map(async (e) => {
+            var e_category = e.category.trim().replace(/\s/g, "_");
+            var e_brand = e.brand.trim().replace(/\s/g, "_");
+            var e_type = e.type.trim().replace(/\s/g, "_");
+            var e_seller = e.seller_name.trim().replace(/\s/g, "_");
+            var e_product = e.product_name.trim().replace(/\s/g, "_");
+            var e_key_product =
+              e_product + "+" + e_category + "+" + e_brand + "+" + e_type;
+            var e_buyer_sku_code = e.buyer_sku_code.trim();
+            var e_status = e.buyer_product_status == true ? 1 : 0; //  e.status;
+            var e_start_cut_off = e.start_cut_off;
+            var e_end_cut_off = e.end_cut_off;
+            var e_price = e.price;
+
+            if (newProductSeller[e_buyer_sku_code] == undefined) {
+              if (Object.keys(product_seller).length > 0) {
+                if (product_seller[e_buyer_sku_code] == undefined) {
+                  newProductSeller[e_buyer_sku_code] = {
+                    key_product_id: e_key_product,
+                    seller_name: e_seller,
+                    buyer_sku_code: e_buyer_sku_code,
+                    status: e_status,
+                    price: e_price,
+                    start_cut_off: e_start_cut_off,
+                    end_cut_off: e_end_cut_off,
+                  };
+                } else {
+                  updateProductSeller[e_buyer_sku_code] = {
+                    buyerSkuKode: e_buyer_sku_code,
+                    seller_name: e_seller,
+                    price: e_price,
+                    sellerProductStatus: e_status,
+                    startCutOff: e_start_cut_off,
+                    endCutOff: e_end_cut_off,
+                  };
+                }
+              } else {
+                newProductSeller[e_buyer_sku_code] = {
+                  buyer_sku_code: e_buyer_sku_code,
+                  status: e_status,
+                  start_cut_off: e_start_cut_off,
+                  end_cut_off: e_end_cut_off,
+                };
+              }
+            }
+            if (newProduct[e_key_product] == undefined) {
+              if (Object.keys(product).length > 0) {
+                if (product[e_key_product] == undefined) {
+                  newProduct[e_key_product] = e_key_product;
+                }
+              } else {
+                console.log("_____DDD4");
+                newProduct[e_key_product] = e_key_product;
+              }
+            }
+            if (newCategory[e_category] == undefined) {
+              if (Object.keys(category).length > 0) {
+                if (category[e_category] == undefined) {
+                  newCategory[e_category] = e_category;
+                }
+              } else {
+                newCategory[e_category] = e_category;
+              }
+            }
+            if (newBrand[e_brand] == undefined) {
+              if (Object.keys(brand).length > 0) {
+                if (brand[e_brand] == undefined) {
+                  newBrand[e_brand] = e_brand;
+                }
+              } else {
+                newBrand[e_brand] = e_brand;
+              }
+            }
+            if (newType[e_type] == undefined) {
+              if (Object.keys(type).length > 0) {
+                if (type[e_type] == undefined) {
+                  newType[e_type] = e_type;
+                }
+              } else {
+                newType[e_type] = e_type;
+              }
+            }
+            if (newSeller[e_seller] == undefined) {
+              if (Object.keys(seller).length > 0) {
+                if (seller[e_seller] == undefined) {
+                  newSeller[e_seller] = e_seller;
+                }
+              } else {
+                newSeller[e_seller] = e_seller;
+              }
+            }
+          })
+        );
+
+        console.log("----------------------AAAA<br>");
+        console.log("+++++++++++++++++++newCategory");
+        console.log(newCategory);
+        console.log("+++++++++++++++++++newBrand");
+        console.log(newBrand);
+        console.log("+++++++++++++++++++newType");
+        console.log(newType);
+        console.log("+++++++++++++++++++newSeller");
+        console.log(newSeller);
+        // console.log("+++++++++++++++++++insertProduct");
+        // console.log(insertProduct);
+        console.log("----------------------AAAA<br>");
+        console.log("----------------------AAAA<br>");
+        console.log("++++++++product");
+        console.log(product);
+        console.log("++++++++product");
+
+        // Menggunakan Promise.all() untuk menggabungkan dua Promise
+        var categories = await this.insert_category(newCategory, category);
+        var brands = await this.insert_brand(newBrand, brand);
+        var typies = await this.insert_type(newType, type);
+        var sellers = await this.insert_seller(newSeller, seller);
+        var products = await this.insert_product({
+          new_product: newProduct,
+          product: product,
+          categories,
+          brands,
+          typies,
+          sellers,
+        });
+
+        if (Object.keys(newProductSeller).length > 0) {
+          await this.insert_product_seller(newProductSeller, products, sellers);
+        }
+
+        if (Object.keys(updateProductSeller).length > 0) {
+          await this.update_product_seller(updateProductSeller, sellers);
+        }
+
+        //callback();
+      });
+      return { error: false };
+    } catch (error) {
+      return { error: true };
+    }
+  }
+
+  async insert_category(newCategory, category) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        if (Object.keys(newCategory).length > 0) {
+          var j = Object.keys(category).length;
+          for (x in newCategory) {
+            var insert = await Digiflazz_category.create({
+              name: x.replace("_", " "),
+              createdAt: myDate,
+              updatedAt: myDate,
+            });
+            category[x] = insert.id;
+          }
+        }
+        resolve(category);
+      }, 1000);
+    });
+  }
+
+  async insert_brand(newBrand, brand) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        if (Object.keys(newBrand).length > 0) {
+          var j = Object.keys(brand).length;
+          for (x in newBrand) {
+            var insert = await Digiflazz_brand.create({
+              name: x.replace("_", " "),
+              createdAt: myDate,
+              updatedAt: myDate,
+            });
+            brand[x] = insert.id;
+          }
+        }
+        resolve(brand);
+      }, 1000);
+    });
+  }
+
+  async insert_type(newType, type) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        if (Object.keys(newType).length > 0) {
+          var j = Object.keys(type).length;
+          for (x in newType) {
+            var insert = await Digiflazz_type.create({
+              name: x.replace("_", " "),
+              createdAt: myDate,
+              updatedAt: myDate,
+            });
+            type[x] = insert.id;
+          }
+        }
+        resolve(type);
+      }, 1000);
+    });
+  }
+
+  async insert_seller(newSeller, seller) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        if (Object.keys(newSeller).length > 0) {
+          var j = Object.keys(seller).length;
+          for (x in newSeller) {
+            var insert = await Digiflazz_seller.create({
+              name: x.replace("_", " "),
+              status: "unbanned",
+              createdAt: myDate,
+              updatedAt: myDate,
+            });
+            seller[x] = insert.id;
+          }
+        }
+        resolve(seller);
+      }, 1000);
+    });
+  }
+
+  async update_product_seller(param, seller) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        for (x in param) {
+          await Digiflazz_seller_product.update(
+            {
+              seller_id: seller[param[x].seller_name],
+              price: param[x].price,
+              sellerProductStatus: param[x].sellerProductStatus,
+              startCutOff: param[x].startCutOff,
+              endCutOff: param[x].endCutOff,
+              updatedAt: myDate,
+            },
+            {
+              where: { buyerSkuKode: param[x].buyerSkuKode },
+            }
+          );
+        }
+      }, 1000);
+    });
+  }
+
+  async insert_product_seller(param, product, seller) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        for (x in param) {
+          var params = {
+            product_digiflazz_id: product[param[x]["key_product_id"]],
+            seller_id: seller[param[x].seller_name],
+            buyerSkuKode: param[x].buyer_sku_code,
+            price: param[x].price,
+            sellerProductStatus: param[x].status,
+            startCutOff: param[x].start_cut_off,
+            endCutOff: param[x].end_cut_off,
+            createdAt: myDate,
+            updatedAt: myDate,
+          };
+          await Digiflazz_seller_product.create(params);
+        }
+      }, 1000);
+    });
+  }
+
+  async insert_product(param) {
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    console.log("+++++++++++++++param");
+    console.log(param["product"]);
+    console.log("+++++++++++++++param");
+    const product = param["product"];
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        if (Object.keys(param.new_product).length > 0) {
+          // var j = Object.keys(product).length;
+          for (x in param.new_product) {
+            var myArray = x.split("+");
+
+            var arr_product_name = myArray[0];
+            var arr_category = myArray[1];
+            var arr_brand = myArray[2];
+            var arr_types = myArray[3];
+
+            // console.log("________x");
+            // console.log(myArray);
+            // console.log(param.categories);
+            // console.log(param.brands);
+            // console.log(param.typies);
+            // console.log(product);
+            // console.log("________x");
+
+            var categoryId = param.categories[arr_category];
+            var brandId = param.brands[arr_brand];
+            var typeId = param.typies[arr_types];
+
+            var insert = await Digiflazz_product.create({
+              name: arr_product_name.replace(/_/g, " "),
+              category_id: categoryId,
+              brand_id: brandId,
+              type_id: typeId,
+              status: "inactive",
+              createdAt: myDate,
+              updatedAt: myDate,
+            });
+            product[x] = insert.id;
+          }
+        }
+        resolve(product);
+      }, 1000);
+    });
   }
 }
 
