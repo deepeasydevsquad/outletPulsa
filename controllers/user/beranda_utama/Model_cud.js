@@ -1,8 +1,7 @@
 const moment = require("moment");
-const { sequelize, Digiflazz_seller } = require("../../../db/models");
+const { sequelize, Bank_transfer } = require("../../../db/models");
 const { write_log } = require("../../../helpers/user/write_log");
 const { hideCurrency } = require("../../../helpers/currency");
-const { info } = require("../../../helpers/user/daftar_seller/index");
 
 class Model_cud {
   constructor(req) {
@@ -17,99 +16,43 @@ class Model_cud {
     this.state = true;
   }
 
-  /**
-   * Fungsi untuk mengupdate rangking seller
-   **/
-  async update_rangking_seller() {
+  async add() {
     // initialize general property
     await this.initialize();
     const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
     const body = this.req.body;
+    const biaya_admin = await hideCurrency(body.biaya_admin);
     // insert process
     try {
-      await Digiflazz_seller.update(
-        { rangking: body.rangking, updatedAt: myDate },
+      const insert = await Bank_transfer.create(
         {
-          where: { id: body.id },
+          bank_id: body.bank_transfer,
+          account_name: body.name,
+          account_number: body.nomor,
+          biaya_admin: biaya_admin,
+          createdAt: myDate,
+          updatedAt: myDate,
         },
         {
           transaction: this.t,
         }
       );
       // write log message
-      this.message = `Mengupdate Data Rangking Seller Dengan ID : ${body.id} dan Rangking Seller Menjadi : ${body.rangking}`;
+      this.message = `Menambahkan Bank Transfer Baru dengan ID Bank Transfer  : ${insert.id} dan ID Bank : ${body.bank_transfer}`;
     } catch (error) {
       this.state = false;
     }
   }
 
-  /**
-   * Fungsi untuk memblokir seller
-   **/
-  async blokir_seller() {
+  async delete() {
     // initialize general property
     await this.initialize();
-
     const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
     const body = this.req.body;
-    // insert process
+    // process
     try {
-      await Digiflazz_seller.update(
-        { status: "banned", updatedAt: myDate },
-        {
-          where: { id: body.id },
-        },
-        {
-          transaction: this.t,
-        }
-      );
-      // write log message
-      this.message = `Memblokir Seller Dengan ID : ${body.id}`;
-    } catch (error) {
-      this.state = false;
-    }
-  }
-
-  /**
-   * Fungsi untuk membuka blokir seller
-   **/
-  async buka_blokir_seller() {
-    // initialize general property
-    await this.initialize();
-
-    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
-    const body = this.req.body;
-    // insert process
-    try {
-      await Digiflazz_seller.update(
-        { status: "unbanned", updatedAt: myDate },
-        {
-          where: { id: body.id },
-        },
-        {
-          transaction: this.t,
-        }
-      );
-      // write log message
-      this.message = `Membuka blokir Seller Dengan ID : ${body.id}`;
-    } catch (error) {
-      this.state = false;
-    }
-  }
-
-  /**
-   * Fungsi untuk menghapus seller
-   **/
-  async delete_seller() {
-    // initialize general property
-    await this.initialize();
-
-    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
-    const body = this.req.body;
-    // insert process
-    try {
-      // delete seller
-      await Digiflazz_seller.destroy(
+      // delete bank transfer
+      await Bank_transfer.destroy(
         {
           where: {
             id: body.id,
@@ -119,8 +62,41 @@ class Model_cud {
           transaction: this.t,
         }
       );
+      // message log
+      this.message = `Menghapus Data Bank Transfer Dengan Bank Transfer Id : ${body.id}`;
+    } catch (error) {
+      this.state = false;
+    }
+  }
+
+  async update() {
+    // initialize general property
+    await this.initialize();
+
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    const body = this.req.body;
+    const biaya_admin = await hideCurrency(body.biaya_admin);
+    // insert process
+    try {
+      // update data Bank Transfer
+      var data = {};
+      data["bank_id"] = body.bank_transfer;
+      data["account_name"] = body.name;
+      data["account_number"] = body.nomor;
+      data["biaya_admin"] = biaya_admin;
+      data["updatedAt"] = myDate;
+      await Bank_transfer.update(
+        data,
+        {
+          where: { id: body.id },
+        },
+        {
+          transaction: this.t,
+        }
+      );
+
       // write log message
-      this.message = `Menghapus data Seller Dengan Seller ID : ${body.id}`;
+      this.message = `Memperbaharui Data Bank Transfer dengan Bank Transfer Id : ${body.id}`;
     } catch (error) {
       this.state = false;
     }

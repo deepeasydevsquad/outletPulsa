@@ -10,12 +10,19 @@ function daftar_member_index(path, url) {
       { title: "DateTimes", center: true },
       { title: "Aksi", center: true },
     ],
-    tools: search_btn({
-      placeholder: "KODE / NAMA / WHATSAPP NUMBER MEMBER",
-      width: 450,
-      onclick: `onClick="${path}_start('${path}', '${url}')"`,
-      path: path,
-    }),
+    tools:
+      btn_primary({
+        label: "Tambah Member",
+        title: "Tambah Member Baru",
+        icon: "fas fa-user",
+        onclick: "add_new_member",
+      }) +
+      search_btn({
+        placeholder: "KODE / NAMA / WHATSAPP NUMBER / NAME MEMBER",
+        width: 450,
+        onclick: `onClick="${path}_start('${path}', '${url}')"`,
+        path: path,
+      }),
     path: path,
     not_found_label: "Daftar Member Tidak Ditemukan",
   });

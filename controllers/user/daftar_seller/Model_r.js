@@ -4,6 +4,7 @@ const {
   Member,
   Digiflazz_seller,
   Digiflazz_seller_product,
+  Validasi_seller_digiflaz,
 } = require("../../../db/models");
 const { db_list_server } = require("../../../helpers/db_ops");
 const { info } = require("../../../helpers/user/daftar_seller/index");
@@ -41,7 +42,11 @@ class Model_r {
     var sql = {};
     sql["limit"] = limit * 1;
     sql["offset"] = (page - 1) * limit;
-    sql["order"] = [["id", "DESC"]];
+    sql["order"] = [
+      ["status", "DESC"],
+      ["rangking", "DESC"],
+      ["id", "DESC"],
+    ];
     sql["attributes"] = ["id", "name", "status", "rangking", "updatedAt"];
     sql["where"] = where;
 
@@ -50,6 +55,8 @@ class Model_r {
     const total = await q.count;
     var list = [];
     var seller_id = {};
+    var list_seller_id = [];
+    var list_time_seller_id = [];
     if (total > 0) {
       await Digiflazz_seller.findAll(query.sql).then(async (value) => {
         var i = 0;
@@ -61,13 +68,44 @@ class Model_r {
               status: e.status,
               jumlah_produk: 0,
               rangking: e.rangking,
+              validasi: false,
               updatedAt: moment(e.updatedAt).format("YYYY-MM-DD HH:mm:ss"),
             };
             seller_id[e.id] = i;
+            list_seller_id[i] = e.id;
+
+            var timeString = moment(new Date()).format("YYYYMMDD");
+            var kode = e.id + timeString;
+
+            if (list_time_seller_id[e.id] != undefined) {
+              if (!list_time_seller_id.includes(kode)) {
+                list_time_seller_id.push(kode);
+              }
+            } else {
+              list_time_seller_id.push(kode);
+            }
+
             i++;
           })
         );
       });
+
+      if (list.length > 0) {
+        await Validasi_seller_digiflaz.findAll({
+          where: { seller_id: { [Op.in]: list_seller_id } },
+        }).then(async (value) => {
+          var i = 0;
+          await Promise.all(
+            await value.map(async (er) => {
+              var timeString = moment(er.createdAt).format("YYYYMMDD");
+              var kode = er.seller_id + timeString;
+              if (list_time_seller_id.includes(kode)) {
+                list[seller_id[er.seller_id]].validasi = true;
+              }
+            })
+          );
+        });
+      }
 
       if (Object.keys(seller_id).length > 0) {
         var seller_produk = {};

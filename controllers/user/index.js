@@ -1,4 +1,5 @@
 const { jwt_value } = require("../../helpers/jwt");
+const jwt = require("jsonwebtoken");
 const Model_r = require("./Model_r");
 const controllers = {};
 
@@ -69,6 +70,58 @@ controllers.User_area = async (req, res) => {
     list_tab: list_tab,
     tab: tab,
   });
+};
+
+controllers.Logout_process = async (req, res) => {
+  if (typeof req.session.login_session !== "undefined") {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    var kode;
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      kode = decoded.kode;
+    });
+    if (!req.session.login_session.hasOwnProperty(kode)) {
+      const index = req.session.login_session.indexOf(kode);
+      if (index > -1) {
+        req.session.login_session.splice(index, 1);
+      }
+      res.status(200).json({
+        msg: "Proses logout berhasil",
+      });
+    } else {
+      res.status(200).json({
+        msg: "Proses logout berhasil",
+      });
+    }
+  } else {
+    res.status(200).json({
+      msg: "Proses logout berhasil",
+    });
+  }
+};
+
+controllers.Info_profil_admin = async (req, res) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  var kode;
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    kode = decoded.kode;
+  });
+  const model_r = new Model_r(req);
+  const info = await model_r.info_profil_admin(kode);
+  // error checking
+  if (info.error) {
+    res.status(400).json({
+      error: true,
+      error_msg: "Data Info Profil Gagal Ditemukan",
+    });
+  } else {
+    res.status(200).json({
+      error: false,
+      error_msg: "Data Info Profil Berhasil Ditemukan",
+      data: info.data,
+    });
+  }
 };
 
 module.exports = controllers;

@@ -38,6 +38,8 @@ const arr_router = [
       "daftar_transaksi",
       "daftar_transaksi_hari_ini",
       "tes_produk",
+      "riwayat_validasi_seller",
+      "beranda_utama",
     ],
   },
 ];

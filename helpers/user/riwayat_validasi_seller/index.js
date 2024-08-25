@@ -1,48 +1,48 @@
-const { Digiflazz_seller, Testing_digiflaz } = require("../../../db/models");
+const { Validasi_seller_digiflaz } = require("../../../db/models");
 
 const helper = {};
 
-helper.check_seller_id = async (value) => {
-  check = await Digiflazz_seller.findOne({
-    where: { id: value },
-  });
-  if (!check) {
-    throw new Error("Seller ID Tidak Terdaftar Dipangkalan Data.");
-  }
-
-  return true;
-};
-
 helper.check_id = async (value) => {
-  check = await Testing_digiflaz.findOne({
+  check = await Validasi_seller_digiflaz.findOne({
     where: { id: value },
   });
   if (!check) {
-    throw new Error("ID Transaksi Tes Tidak Terdaftar Dipangkalan Data.");
+    throw new Error("ID Validasi Seller Tidak Terdaftar Dipangkalan Data.");
   }
   return true;
 };
-// check_id
 
-helper.info = async (id) => {
-  var list = {};
-  await Testing_digiflaz.findOne({
-    where: { id: id },
-    include: {
-      require: true,
-      model: Digiflazz_seller,
-    },
-  }).then(async (val) => {
-    if (val) {
-      list["id"] = val.id;
-      list["kode"] = val.kode;
-      list["seller_id"] = val.seller_id;
-      list["produk_name"] = val.produk_name;
-      list["createdAt"] = val.createdAt;
-    }
-  });
-  return list;
-};
+// helper.check_seller_id = async (value) => {
+//   check = await Digiflazz_seller.findOne({
+//     where: { id: value },
+//   });
+//   if (!check) {
+//     throw new Error("Seller ID Tidak Terdaftar Dipangkalan Data.");
+//   }
+
+//   return true;
+// };
+
+// // check_id
+
+// helper.info = async (id) => {
+//   var list = {};
+//   await Testing_digiflaz.findOne({
+//     where: { id: id },
+//     include: {
+//       require: true,
+//       model: Digiflazz_seller,
+//     },
+//   }).then(async (val) => {
+//     if (val) {
+//       list["id"] = val.id;
+//       list["kode"] = val.kode;
+//       list["seller_id"] = val.seller_id;
+//       list["produk_name"] = val.produk_name;
+//     }
+//   });
+//   return list;
+// };
 
 // helper.info_produk = async (id) => {
 //   var list = {};

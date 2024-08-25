@@ -18,6 +18,9 @@ module.exports = (sequelize, DataTypes) => {
       Digiflazz_seller.hasMany(models.Testing_digiflaz, {
         foreignKey: "seller_id",
       });
+      Digiflazz_seller.hasMany(models.Validasi_seller_digiflaz, {
+        foreignKey: "seller_id",
+      });
     }
   }
   Digiflazz_seller.init(

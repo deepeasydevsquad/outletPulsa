@@ -16,7 +16,10 @@ module.exports = (sequelize, DataTypes) => {
       buyer_sku_kode: DataTypes.STRING,
       nomor_tujuan: DataTypes.STRING,
       harga: DataTypes.INTEGER,
+      saldo_before: DataTypes.INTEGER,
+      saldo_after: DataTypes.INTEGER,
       status: DataTypes.ENUM(["proses", "gagal", "sukses", "reverse"]),
+      waktu_kirim: DataTypes.DATE,
     },
     {
       sequelize,

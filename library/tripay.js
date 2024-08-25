@@ -73,7 +73,7 @@ class Tripay {
     });
     const str = payload.toString();
     var options_GET = {
-      uri: await this.url_act("pembelian/produk/cek?" + str),
+      uri: await this.url_action("pembelian/produk/cek?" + str),
       method: "POST",
       headers: {
         Authorization: "Bearer " + this.api_key,
@@ -90,6 +90,31 @@ class Tripay {
           });
         } else {
           return callback({ data: {} });
+        }
+      }
+    });
+  }
+
+  async cek_saldo(callback) {
+    var optionsGET = {
+      uri: await this.url_action("ceksaldo"),
+      method: "GET",
+      headers: {
+        Authorization: "Bearer " + this.api_key,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    };
+
+    request(optionsGET, async function (errorGET, responseGET, bodyGET) {
+      if (!errorGET && responseGET.statusCode == 200) {
+        const json = JSON.parse(bodyGET);
+        if (json.data != undefined) {
+          return callback({
+            saldo: json.data,
+          });
+        } else {
+          return callback({ saldo: 0 });
         }
       }
     });

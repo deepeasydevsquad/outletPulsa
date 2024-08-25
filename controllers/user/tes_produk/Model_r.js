@@ -1,12 +1,14 @@
 const moment = require("moment");
 const {
+  Op,
   Digiflazz_seller,
   Digiflazz_seller_product,
   Digiflazz_product,
+  Testing_digiflaz,
+  Validasi_seller_digiflaz,
 } = require("../../../db/models");
 const { db_list_server } = require("../../../helpers/db_ops");
 const { info } = require("../../../helpers/user/tripay_prabayar/index");
-const Tripay = require("../../../library/tripay");
 
 class Model_r {
   constructor(req) {
@@ -21,9 +23,9 @@ class Model_r {
 
     if (body.pageNumber != undefined) page = body.pageNumber;
 
-    var where = {
-      status: body.active == "active" ? "tersedia" : "tidak tersedia",
-    };
+    // var where = {
+    //   status: body.active == "active" ? "tersedia" : "tidak tersedia",
+    // };
     if (body.search != undefined && body.search != "") {
       where = {
         ...where,
@@ -36,17 +38,17 @@ class Model_r {
       };
     }
 
-    if (body.operator != 0) {
-      where = { ...where, ...{ operator_id: body.operator } };
-    }
+    // if (body.operator != 0) {
+    //   where = { ...where, ...{ operator_id: body.operator } };
+    // }
 
-    if (body.koneksi != "semua") {
-      if (body.koneksi == "sudah_konek") {
-        where = { ...where, ...{ produk_id: { [Op.ne]: null } } };
-      } else {
-        where = { ...where, ...{ produk_id: null } };
-      }
-    }
+    // if (body.koneksi != "semua") {
+    //   if (body.koneksi == "sudah_konek") {
+    //     where = { ...where, ...{ produk_id: { [Op.ne]: null } } };
+    //   } else {
+    //     where = { ...where, ...{ produk_id: null } };
+    //   }
+    // }
 
     var sql = {};
     sql["limit"] = limit * 1;
@@ -55,53 +57,90 @@ class Model_r {
     sql["attributes"] = [
       "id",
       "kode",
-      "name",
-      "price",
+      "produk_name",
+      "buyer_sku_kode",
+      "nomor_tujuan",
+      "harga",
       "status",
-      "produk_id",
-      "deskripsi",
+      "waktu_kirim",
+      "saldo_before",
+      "saldo_after",
+      "seller_id",
+      "createdAt",
       "updatedAt",
     ];
-    sql["where"] = where;
-
+    // sql["where"] = where;
     sql["include"] = [
       {
         required: true,
-        model: Tripay_prabayar_operator,
-        attributes: ["kode", "name"],
-        include: {
-          required: true,
-          model: Tripay_prabayar_kategori,
-          attributes: ["name", "type"],
-        },
+        model: Digiflazz_seller,
+        attributes: ["name", "status"],
       },
     ];
 
     const query = await db_list_server(sql);
-    const q = await Tripay_prabayar_produk.findAndCountAll(query.total);
+    const q = await Testing_digiflaz.findAndCountAll(query.total);
     const total = await q.count;
     var list = [];
-    var list_produk_id = [];
+    var list_time_seller_id = [];
+    var seller_id_to_num = [];
+    var seller_id = [];
     if (total > 0) {
-      await Tripay_prabayar_produk.findAll(query.sql).then(async (value) => {
+      await Testing_digiflaz.findAll(query.sql).then(async (value) => {
         var i = 0;
+        var j = 0;
+
         await Promise.all(
           await value.map(async (e) => {
             list[i] = {
               id: e.id,
               kode: e.kode,
-              name: e.name,
-              price: e.price,
+              produk_name: e.produk_name,
+              buyer_sku_kode: e.buyer_sku_kode,
+              nomor_tujuan: e.nomor_tujuan,
+              harga: e.harga,
               status: e.status,
-              operator: e.Tripay_prabayar_operator.name,
-              type: e.Tripay_prabayar_operator.Tripay_prabayar_kategori.type,
-              koneksi: {},
+              status_seller: e.Digiflazz_seller.status,
+              nama_seller: e.Digiflazz_seller.name,
+              saldo_before: e.saldo_before,
+              saldo_after: e.saldo_after,
+              validasi: false,
+              waktu_kirim: moment(e.waktu_kirim).format("YYYY-MM-DD HH:mm:ss"),
               updatedAt: moment(e.updatedAt).format("YYYY-MM-DD HH:mm:ss"),
             };
-            if (e.produk_id != null) {
-              list_produk_id[e.produk_id] = i;
+            if (!seller_id.includes(e.seller_id)) {
+              seller_id[j] = e.seller_id;
+              j++;
+            }
+            seller_id_to_num[e.seller_id] = i;
+            var timeString = moment(e.createdAt).format("YYYYMMDD");
+            var kode = e.seller_id + timeString;
+
+            if (list_time_seller_id[e.seller_id] != undefined) {
+              if (!list_time_seller_id.includes(kode)) {
+                list_time_seller_id.push(kode);
+              }
+            } else {
+              list_time_seller_id.push(kode);
             }
             i++;
+          })
+        );
+      });
+    }
+
+    if (list.length > 0) {
+      await Validasi_seller_digiflaz.findAll({
+        where: { seller_id: { [Op.in]: seller_id } },
+      }).then(async (value) => {
+        var i = 0;
+        await Promise.all(
+          await value.map(async (er) => {
+            var timeString = moment(er.createdAt).format("YYYYMMDD");
+            var kode = er.seller_id + timeString;
+            if (list_time_seller_id.includes(kode)) {
+              list[seller_id_to_num[er.seller_id]].validasi = true;
+            }
           })
         );
       });
@@ -112,6 +151,8 @@ class Model_r {
       total: total,
     };
   }
+
+  async info_list_tes() {}
 
   async info_tes() {
     try {
@@ -193,6 +234,9 @@ class Model_r {
     }
   }
 
+  // async info_saldo_digiflaz() {
+
+  // }
   // async get_operator_tripay() {
   //   var list = [];
   //   await Tripay_prabayar_operator.findAll().then(async (value) => {

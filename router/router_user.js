@@ -12,4 +12,14 @@ const router = express.Router();
 
 router.get("/Users/", [verify_session], controllers.User_area);
 
+router.get("/Users/Logout", [verify_session], controllers.Logout_process);
+
+router.get(
+  "/Users/Info_profil_admin",
+  [verify_session],
+  controllers.Info_profil_admin
+);
+
+//
+
 module.exports = router;

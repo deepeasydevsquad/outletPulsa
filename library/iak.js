@@ -120,6 +120,60 @@ class Iak {
       }
     });
   }
+
+  async cek_saldo(callback) {
+    var optionsGET = {
+      uri: await this.url_act(this.url_check_balance),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      json: {
+        username: this.username,
+        sign: await this.sign_md5_check_balance(),
+      },
+    };
+    request(optionsGET, async function (errorGET, responseGET, bodyGET) {
+      if (!errorGET && responseGET.statusCode == 200) {
+        console.log(bodyGET.data);
+        return await callback({
+          saldo: bodyGET.data.balance,
+        });
+      } else {
+        return await callback({
+          saldo: 0,
+        });
+      }
+    });
+  }
 }
+
+// helper.cek_saldo_IAK = async (callback) => {
+//   var optionsGET = {
+//     uri: await urlAct(url_check_balance),
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Accept: "application/json",
+//     },
+//     json: {
+//       username: username,
+//       sign: await sign_md5_check_balance(),
+//     },
+//   };
+//   request(optionsGET, async function (errorGET, responseGET, bodyGET) {
+//     if (!errorGET && responseGET.statusCode == 200) {
+//       console.log(bodyGET.data);
+//       return await callback({
+//         saldo: bodyGET.data.balance,
+//       });
+//     } else {
+//       return await callback({
+//         saldo: 0,
+//       });
+//     }
+//   });
+// };
 
 module.exports = Iak;

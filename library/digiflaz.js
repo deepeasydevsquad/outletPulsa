@@ -27,8 +27,6 @@ class Digiflaz {
     return md5(this.username + apiKey + "depo");
   }
 
-  // md5(username + apiKey + "depo")
-
   async sign_md5_price_list() {
     var apiKey =
       this.production == true ? this.production_key : this.development_key;
@@ -73,6 +71,40 @@ class Digiflaz {
         }
       } else {
         return callback({ data: {} });
+      }
+    });
+  }
+
+  async cek_saldo(callback) {
+    const payload = {
+      cmd: "deposit",
+      username: this.username,
+      sign: await this.sign_md5_cek_saldo(),
+    };
+    const str = payload.toString();
+    var optionsGET = {
+      uri: this.url_cek_saldo,
+      method: "POST", //  kemungkinan ganti
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      json: payload,
+    };
+    return request(optionsGET, async function (errorGET, responseGET, bodyGET) {
+      if (!errorGET && responseGET.statusCode == 200) {
+        const json = bodyGET;
+        if (json.data != undefined) {
+          return callback({
+            data: {
+              saldo: json.data.deposit,
+            },
+          });
+        } else {
+          return callback({ data: { saldo: 0 } });
+        }
+      } else {
+        return callback({ data: { saldo: 0 } });
       }
     });
   }

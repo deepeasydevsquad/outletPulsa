@@ -1,4 +1,4 @@
-const { Menu, Submenu, Tab } = require("../../db/models");
+const { Menu, Submenu, Tab, User } = require("../../db/models");
 
 class Model_r {
   constructor(req) {
@@ -60,6 +60,26 @@ class Model_r {
       );
     });
     return list;
+  }
+
+  async info_profil_admin(kode) {
+    try {
+      var data = {};
+      await User.findOne({
+        where: { kode: kode },
+      }).then(async (val) => {
+        if (val) {
+          data["id"] = val.id;
+          data["name"] = val.name;
+        }
+      });
+      return { error: false, data: data };
+    } catch (error) {
+      console.log("--------------------");
+      console.log(error);
+      console.log("--------------------");
+      return { error: true };
+    }
   }
 }
 

@@ -1,11 +1,12 @@
 function daftar_seller_index(path, url) {
   var tb = tables({
-    width: [30, 15, 15, 15, 15, 10],
+    width: [20, 15, 15, 15, 10, 15, 10],
     columns: [
       { title: "Nama Seller", center: true },
       { title: "Status", center: true },
       { title: "Jumlah Produk", center: true },
       { title: "Rangking", center: true },
+      { title: "Validasi", center: true },
       { title: "DateTimes", center: true },
       { title: "Aksi", center: true },
     ],
@@ -92,28 +93,47 @@ function List_daftar_seller(JSONData) {
     }
   }
 
-  var html = tr([
-    td_center([json.name], 'style="vertical-align: middle;"'),
-    td_center(
-      [
-        json.status == "banned"
-          ? `<b style="color:red;">Seller Di Blokir</b>`
-          : `<b style="color:green;">Seller Tidak Di Blokir</b>`,
-      ],
-      'style="vertical-align: middle;"'
-    ),
-    td_center(
-      [
-        `<b ${json.jumlah_produk == 0 ? `style="color:red;"` : ""} >` +
-          json.jumlah_produk +
-          " Produk</b>",
-      ],
-      'style="vertical-align: middle;"'
-    ),
-    td_center([rangking], 'style="vertical-align: middle;"'),
-    td_center([json.updatedAt], 'style="vertical-align: middle;"'),
-    td_center(btn, 'style="text-align:right;vertical-align: middle;"'),
-  ]);
+  // console.log("___________________________");
+  // console.log(json.rangking);
+  // console.log("___________________________");
+
+  var html = tr(
+    [
+      td_center([json.name], 'style="vertical-align: middle;"'),
+      td_center(
+        [
+          json.status == "banned"
+            ? `<b style="color:red;">Seller Di Blokir</b>`
+            : `<b style="color:green;">Seller Tidak Di Blokir</b>`,
+        ],
+        'style="vertical-align: middle;"'
+      ),
+      td_center(
+        [
+          `<b ${json.jumlah_produk == 0 ? `style="color:red;"` : ""} >` +
+            json.jumlah_produk +
+            " Produk</b>",
+        ],
+        'style="vertical-align: middle;"'
+      ),
+      td_center([rangking], 'style="vertical-align: middle;"'),
+      td_center(
+        [
+          json.validasi == true
+            ? "<b style='color:green'>Tervalidasi</b>"
+            : "<b style='color:red'>Belum Tervalidasi</b>",
+        ],
+        'style="vertical-align: middle;"'
+      ),
+      td_center([json.updatedAt], 'style="vertical-align: middle;"'),
+      td_center(btn, 'style="text-align:right;vertical-align: middle;"'),
+    ],
+    json.rangking != 5
+      ? json.rangking == 4
+        ? `style="background-color:#ffa50087"`
+        : `style="background-color:#ffe4e4"`
+      : ""
+  );
   return html;
 }
 
@@ -206,6 +226,7 @@ function blok_seller(id) {
             function (e, xhr) {
               smile_alert(e.error_msg);
               daftar_seller(100, "daftar_seller", "Daftar_seller");
+              tes_produk(100, "tes_produk", "Tes_produk");
             },
             function (status, errMsg) {
               frown_alert(errMsg.error_msg);

@@ -1,12 +1,11 @@
 function tes_produk_index(path, url) {
   const tab = tables({
-    width: [10, 20, 20, 20, 20, 10],
+    width: [10, 30, 20, 30, 10],
     columns: [
       { title: "Kode", center: true },
       { title: "Info Seller", center: true },
       { title: "Harga", center: true },
-      { title: "Status", center: true },
-      { title: "Waktu Response", center: true },
+      { title: "Info Pengiriman", center: true },
       { title: "Aksi", center: true },
     ],
     tools: search_btn({
@@ -20,7 +19,7 @@ function tes_produk_index(path, url) {
   });
 
   var tb = `<div class="col-3 py-3">
-              <form id="form" class="formName" enctype="multipart/form-data" method="post">
+              <form id="form-big" class="formName" enctype="multipart/form-data" method="post">
                   <div class="card">
                     <div class="card-body ">
                         <div class="row" >
@@ -67,8 +66,8 @@ function tes_produk_index(path, url) {
                   <div class="col-4">
                     <div class="small-box bg-secondary">
                       <div class="inner">
-                        <h3 id="total_usaha" style="font-size: 30px;">Saldo Digiflaz</h3>
-                        <p>Rp 1.000.000,-</p>
+                        <h3  style="font-size: 30px;">Saldo Digiflaz</h3>
+                        <p id="saldo">Rp 0,-</p>
                       </div>
                       <div class="icon"><i class="fas fa-info-circle"></i></div>
                     </div>
@@ -98,7 +97,20 @@ function tes_produk_start(path, url) {
     }
   );
 
-  // tes_produk(100, path, url);
+  ajax_default(
+    {
+      url: Urls("Tes_produk/info_saldo_digiflaz"),
+      method: "get",
+    },
+    function (e, xhr) {
+      $("#saldo").html("Rp " + numberFormat(e.data));
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.error_msg);
+    }
+  );
+
+  tes_produk(100, path, url);
 }
 
 function tes_produk(perpage, path, url, input) {
@@ -120,15 +132,78 @@ function tes_produk(perpage, path, url, input) {
 
 function List_tes_produk(JSONData) {
   var json = JSON.parse(JSONData);
+  btn = [];
+  if (json.status_seller != "banned") {
+    if (json.validasi == false) {
+      btn[0] = btnDefault({
+        title: "Validasi Seller",
+        onClick: ` onclick="validasi_seller('${json.id}')" `,
+        icon: "fas fa-check-double",
+      });
+    }
+    btn[1] = btnDanger({
+      title: "Blok Seller",
+      onClick: ` onclick="blok_seller_transaksi_tes('${json.id}')" `,
+      icon: "fas fa-ban",
+    });
+  }
+  btn[2] = btnDanger({
+    title: "Delete Transaksi",
+    onClick: ` onclick="delete_transaksi_tes('${json.id}')" `,
+    icon: "fas fa-times",
+  });
 
-  var html = tr([
-    td_center([json.kode]),
-    td_center([""]),
-    td_center([""]),
-    td_center([""]),
-    td_center([json.updatedAt]),
-    td(btn, 'style="text-align:right;"'),
-  ]);
+  var obj_info_seller = [
+    {
+      title: "NAMA SELLER",
+      value: json.nama_seller,
+    },
+    {
+      title: "NAMA PRODUK SELLER",
+      value: json.produk_name,
+    },
+  ];
+
+  var obj_info_waktu = [
+    {
+      title: "STATUS",
+      value:
+        json.status == "proses"
+          ? "<b style='color:orange;'>PROSES</b>"
+          : json.status == "gagal"
+          ? "<b style='color:red;'>GAGAL</b>"
+          : "<b style='color:green;'>SUKSES</b>",
+    },
+    {
+      title: "SALDO BEFORE",
+      value: "Rp " + numberFormat(json.saldo_before),
+    },
+    {
+      title: "SALDO AFTER",
+      value: "Rp " + numberFormat(json.saldo_after),
+    },
+    {
+      title: "WAKTU KIRIM",
+      value: json.waktu_kirim,
+    },
+    {
+      title: "WAKTU UPDATE",
+      value: json.updatedAt,
+    },
+  ];
+
+  var info_waktu = simpleTableFunc(obj_info_waktu, "50");
+  var info_seller = simpleTableFunc(obj_info_seller, "50");
+  var html = tr(
+    [
+      td_center([json.kode]),
+      td_center([info_seller]),
+      td_center(["Rp " + numberFormat(json.harga)]),
+      td_center([info_waktu]),
+      td(btn, 'style="text-align:right;"'),
+    ],
+    json.status_seller == "banned" ? `style="background-color:#ffc0c061;"` : ""
+  );
   return html;
 }
 
@@ -162,4 +237,62 @@ function get_produk_seller() {
     var list_produk_seller = `<option value="0">Pilih Produk Seller (0 Produk)</option>`;
     $("#produk_seller").html(list_produk_seller);
   }
+}
+
+function delete_transaksi_tes(id) {
+  ajax_default(
+    {
+      url: Urls("Tes_produk/delete_transaksi_tes"),
+      method: "post",
+      data: { id: id },
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+      tes_produk(100, "tes_produk", "Tes_produk");
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.error_msg);
+    }
+  );
+}
+
+function blok_seller_transaksi_tes(id) {
+  ajax_default(
+    {
+      url: Urls("Tes_produk/blok_seller_transaksi_tes"),
+      method: "post",
+      data: { id: id },
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+      daftar_seller(100, "daftar_seller", "Daftar_seller");
+      tes_produk(100, "tes_produk", "Tes_produk");
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.error_msg);
+    }
+  );
+}
+
+function validasi_seller(id) {
+  ajax_default(
+    {
+      url: Urls("Tes_produk/validasi_seller"),
+      method: "post",
+      data: { id: id },
+    },
+    function (e, xhr) {
+      smile_alert(e.error_msg);
+      riwayat_validasi_seller(
+        100,
+        "riwayat_validasi_seller",
+        "Riwayat_validasi_seller"
+      );
+      daftar_seller(100, "daftar_seller", "Daftar_seller");
+      tes_produk(100, "tes_produk", "Tes_produk");
+    },
+    function (status, errMsg) {
+      frown_alert(errMsg.error_msg);
+    }
+  );
 }

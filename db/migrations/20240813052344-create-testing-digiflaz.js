@@ -34,9 +34,19 @@ module.exports = {
       harga: {
         type: Sequelize.INTEGER,
       },
+      saldo_before: {
+        type: Sequelize.INTEGER,
+      },
+      saldo_after: {
+        type: Sequelize.INTEGER,
+      },
       status: {
         type: Sequelize.ENUM,
         values: ["proses", "gagal", "sukses", "reverse"],
+      },
+      waktu_kirim: {
+        allowNull: false,
+        type: Sequelize.DATE,
       },
       createdAt: {
         allowNull: false,
