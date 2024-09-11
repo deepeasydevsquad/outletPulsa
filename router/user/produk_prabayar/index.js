@@ -13,8 +13,28 @@ const {
   verify_token,
 } = require("../../../middleware/verify_session_token");
 
+// FILE
+var multer = require("multer");
+
+// define storage upload excel
+var storage_upload_excel = multer.diskStorage({
+  destination: function (req, file, callback) {
+    callback(null, "./public/excel");
+  },
+  filename: function (req, file, callback) {
+    callback(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
 // ROUTER
 const router = express.Router();
+
+router.post(
+  "/Users/Produk_prabayar/upload_excel",
+  [verify_session],
+  multer({ storage: storage_upload_excel }).single("excel"),
+  controllers.upload_excel
+);
 
 router.post(
   "/Users/Produk_prabayar/server_side",

@@ -54,7 +54,8 @@
     "promise": "^8.3.0",
     "request": "^2.88.2",
     "sequelize": "^6.25.8",
-    "sharp": "^0.33.4"
+    "sharp": "^0.33.4",
+    "xlsx": "^0.18.5"
   },
   "files.associations": {
     "*.ejs": "html",

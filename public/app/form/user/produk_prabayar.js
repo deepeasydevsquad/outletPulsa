@@ -940,21 +940,20 @@ function upload_excel_to_database() {
         text: "Upload Data Excel",
         btnClass: "btn-primary",
         action: function () {
-          // ajax_default(
-          //   {
-          //     url: Urls("Produk_prabayar/markup_produk_prabayar_all"),
-          //     method: "post",
-          //     loader: true,
-          //     form: true,
-          //   },
-          //   function (e, xhr) {
-          //     smile_alert(e.error_msg);
-          //     produk_prabayar(100, "produk_prabayar", "Produk_prabayar");
-          //   },
-          //   function (status, errMsg) {
-          //     frown_alert(errMsg);
-          //   }
-          // );
+          ajax_file(
+            {
+              url: Urls("Produk_prabayar/upload_excel"),
+              method: "post",
+              form: true,
+            },
+            function (e, xhr) {
+              smile_alert(e.error_msg);
+              produk_prabayar(100, "produk_prabayar", "Produk_prabayar");
+            },
+            function (status, errMsg) {
+              frown_alert(errMsg.error_msg);
+            }
+          );
         },
       },
     },
@@ -967,7 +966,7 @@ function form_upload_excel_to_database() {
                     <div class="col-12">
                         <div class="form-group">
                           <label>Upload excel to database</label>
-                          <input type="file" class="form-control form-control-sm" />
+                          <input type="file" class="form-control form-control-sm" name="excel"/>
                         </div>
                     </div>
                   </div>

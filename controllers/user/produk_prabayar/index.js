@@ -6,6 +6,8 @@ const { validationResult } = require("express-validator");
 const Model_r = require("./Model_r");
 const Model_cud = require("./Model_cud");
 const { hideCurrency } = require("../../../helpers/currency");
+const xlsx = require("xlsx");
+
 const controllers = {};
 
 /**
@@ -607,7 +609,8 @@ controllers.download_produk_prabayar = async (req, res) => {
 controllers.download_excel = async (req, res) => {
   const model_r = new Model_r(req);
   const info_user = await model_r.info_user();
-  const info_produk = await model_r.info_produk_prabayar();
+
+  const info_produk = await model_r.info_produk_prabayar(info_user.data.kode);
 
   var workbook = new Excel.Workbook();
 
@@ -792,6 +795,43 @@ controllers.download_excel = async (req, res) => {
   workbook.xlsx.write(res).then(function (data) {
     res.end();
   });
+};
+
+controllers.upload_excel = async (req, res) => {
+  const errors = validationResult(req);
+  if (req.file == undefined) {
+    errors.push = {
+      value: "",
+      msg: "No file uploaded.",
+      param: "file",
+      location: "body",
+    };
+  }
+  if (!errors.isEmpty()) {
+    // return ERROR
+    const err_msg = await error_msg(errors);
+    res.status(400).json({ error: true, error_msg: err_msg });
+  } else {
+    // Membaca file Excel
+    const workbook = xlsx.readFile(req.file.path);
+    const sheet_name_list = workbook.SheetNames;
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]); // Mengambil data dari sheet pertama
+    const model_cud = new Model_cud(req);
+    // delete process
+    await model_cud.upload_excel(data);
+    // get response
+    if (await model_cud.response()) {
+      res.status(200).json({
+        error: false,
+        error_msg: "Proses Penghapusan Data Bank Transfer berhasil dilakukan",
+      });
+    } else {
+      res.status(400).json({
+        error: true,
+        error_msg: "Proses Penghapusan Data Bank Transfer gagal dilakukan.",
+      });
+    }
+  }
 };
 
 module.exports = controllers;

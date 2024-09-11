@@ -276,6 +276,32 @@ class Model_cud {
     }
   }
 
+  async upload_excel(data) {
+    // initialize general property
+    await this.initialize();
+    const myDate = moment(new Date()).format("YYYY-MM-DD HH:mm:ss");
+    try {
+      for (let x in data) {
+        await Produk_prabayar.update(
+          {
+            urutan: data[x]["NOMOR URUT"],
+            updatedAt: myDate,
+          },
+          {
+            where: { kode: data[x]["KODE PRODUK"] },
+          },
+          {
+            transaction: this.t,
+          }
+        );
+      }
+      // message log
+      this.message = `Melakukan Update Data Produk Prabayar`;
+    } catch (error) {
+      this.state = false;
+    }
+  }
+
   async response() {
     if (this.state) {
       await write_log(this.req, this.t, {

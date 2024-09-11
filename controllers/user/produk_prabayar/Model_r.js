@@ -661,6 +661,7 @@ class Model_r {
         if (val) {
           data["id"] = val.id;
           data["name"] = val.name;
+          data["kode"] = val.kode;
         }
       });
       return { error: false, data: data };
@@ -669,47 +670,41 @@ class Model_r {
     }
   }
 
-  async info_produk_prabayar() {
-    const body = this.req.body;
+  async info_produk_prabayar(kode) {
+    const sesi = this.req.session.download_excel[kode];
 
-    var where = {};
-    if (body.active) {
-      where = {
-        ...where,
-        ...{ status: body.active == "active" ? "active" : "inactive" },
-      };
-    }
+    var where = { status: "active" };
 
-    if (body.search != undefined && body.search != "") {
+    if (sesi.search != undefined && sesi.search != "") {
       where = {
         ...where,
         ...{
           [Op.or]: [
-            { kode: { [Op.like]: "%" + body.search + "%" } },
-            { name: { [Op.like]: "%" + body.search + "%" } },
+            { kode: { [Op.like]: "%" + sesi.search + "%" } },
+            { name: { [Op.like]: "%" + sesi.search + "%" } },
           ],
         },
       };
     }
 
-    if (body.server != 0 && body.server != undefined) {
-      where = { ...where, ...{ server_id: body.server } };
+    if (sesi.server != 0 && sesi.server != undefined) {
+      where = { ...where, ...{ server_id: sesi.server } };
     }
 
     var where_kategori = {};
 
-    if (body.operator != 0 && body.operator != undefined) {
-      where = { ...where, ...{ operator_id: body.operator } };
+    if (sesi.operator != 0 && sesi.operator != undefined) {
+      where = { ...where, ...{ operator_id: sesi.operator } };
     } else {
-      if (body.kategori != 0 && body.operator != undefined) {
+      if (sesi.kategori != 0 && sesi.operator != undefined) {
         where_kategori = {
           ...where_kategori,
-          ...{ id: body.kategori },
+          ...{ id: sesi.kategori },
         };
       }
     }
 
-    if (body.koneksi != "semua" && body.koneksi != undefined) {
+    if (sesi.koneksi != "semua" && sesi.koneksi != undefined) {
       if (body.koneksi == "sudah_konek") {
         where = { ...where, ...{ server_id: { [Op.ne]: null } } };
       } else {

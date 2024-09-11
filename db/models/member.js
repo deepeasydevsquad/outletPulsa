@@ -17,6 +17,9 @@ module.exports = (sequelize, DataTypes) => {
       Member.hasMany(models.Request_deposit, {
         foreignKey: "member_id",
       });
+      Member.hasMany(models.Otp, {
+        foreignKey: "member_id",
+      });
     }
   }
   Member.init(
