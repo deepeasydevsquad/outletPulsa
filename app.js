@@ -40,6 +40,8 @@ const arr_router = [
       "tes_produk",
       "riwayat_validasi_seller",
       "beranda_utama",
+      "otp_pendaftaran",
+      "otp_login",
     ],
   },
 ];
