@@ -199,7 +199,7 @@ class Model_cud {
         },
         include: [
           {
-            require: true,
+            required: true,
             model: Produk_pascabayar,
           },
         ],

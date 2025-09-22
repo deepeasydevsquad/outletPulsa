@@ -71,12 +71,12 @@ class Model_r {
     sql["where"] = where;
     sql["include"] = [
       {
-        require: true,
+        required: true,
         model: Member,
         attributes: ["kode", "fullname", "whatsapp_number"],
       },
       {
-        require: false,
+        required: false,
         model: Transaction_prabayar,
         attributes: [
           "nomor_tujuan",
@@ -89,19 +89,19 @@ class Model_r {
         ],
         include: [
           {
-            require: false,
+            required: false,
             model: Produk_prabayar,
             attributes: ["kode", "name"],
           },
           {
-            require: false,
+            required: false,
             model: Server,
             attributes: ["kode", "name"],
           },
         ],
       },
       {
-        require: false,
+        required: false,
         model: Transaction_pascabayar,
         attributes: [
           "nomor_tujuan",
@@ -119,12 +119,12 @@ class Model_r {
         ],
         include: [
           {
-            require: false,
+            required: false,
             model: Produk_pascabayar,
             attributes: ["kode", "name"],
           },
           {
-            require: false,
+            required: false,
             model: Server,
             attributes: ["kode", "name"],
           },

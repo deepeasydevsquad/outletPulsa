@@ -159,7 +159,7 @@ class Model_r {
       var num = {};
       await Digiflazz_seller_product.findAll({
         include: {
-          require: true,
+          required: true,
           model: Digiflazz_seller,
           where: { status: "unbanned" },
         },
@@ -210,7 +210,7 @@ class Model_r {
         where: { seller_id: body.seller_id },
         include: [
           {
-            require: true,
+            required: true,
             model: Digiflazz_product,
             attributes: ["name"],
           },

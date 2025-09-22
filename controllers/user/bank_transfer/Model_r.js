@@ -37,7 +37,7 @@ class Model_r {
     sql["where"] = where;
     sql["include"] = [
       {
-        require: true,
+        required: true,
         model: Bank,
         attributes: ["kode", "name"],
       },

@@ -38,19 +38,19 @@ class Model_r {
     sql["attributes"] = ["id", "nominal", "updatedAt"];
     sql["include"] = [
       {
-        require: true,
+        required: true,
         model: Transaction,
         attributes: ["id", "kode", "saldo_before", "saldo_after"],
         where: where,
         include: [
           {
-            require: true,
+            required: true,
             model: Member,
             attributes: ["fullname", "whatsapp_number"],
             where: where_member,
           },
           {
-            require: false,
+            required: false,
             model: Request_deposit,
             attributes: [
               "kode",
@@ -60,11 +60,11 @@ class Model_r {
               "action_do",
             ],
             include: {
-              require: false,
+              required: false,
               model: Bank_transfer,
               attributes: ["account_name", "account_number"],
               include: {
-                require: false,
+                required: false,
                 model: Bank,
                 attributes: ["name", "kode"],
               },

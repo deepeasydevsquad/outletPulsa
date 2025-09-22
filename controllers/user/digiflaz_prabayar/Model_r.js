@@ -152,7 +152,7 @@ class Model_r {
           attributes: ["id", "kode", "name"],
           where: { id: { [Op.in]: ids } },
           include: {
-            require: true,
+            required: true,
             model: Operator,
             attributes: ["name"],
           },
@@ -184,7 +184,7 @@ class Model_r {
           ],
           where: { product_digiflazz_id: { [Op.in]: list_produk_digiflaz_id } },
           include: {
-            require: true,
+            required: true,
             model: Digiflazz_seller,
             where: { status: "unbanned" },
             attributes: ["name"],

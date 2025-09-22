@@ -33,7 +33,7 @@ class Model_r {
     sql["order"] = [["updatedAt", "DESC"]];
     sql["attributes"] = ["id", "createdAt", "updatedAt"];
     sql["include"] = {
-      require: true,
+      required: true,
       model: Digiflazz_seller,
       attributes: ["name", "status"],
     };

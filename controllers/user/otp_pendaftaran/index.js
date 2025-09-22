@@ -6,7 +6,7 @@ const controllers = {};
 
 controllers.server_side;
 /**
- * Fungsi untuk menampilkan data server otp pendaftaran
+ * Fungsi untuk menampilkan data server otp login
  **/
 controllers.server_side = async (req, res) => {
   const model_r = new Model_r(req);
@@ -15,7 +15,7 @@ controllers.server_side = async (req, res) => {
 };
 
 /**
- * Fungsi untuk menghapus data Otp Pendaftaran
+ * Fungsi untuk menghapus data Otp login
  **/
 controllers.delete = async (req, res) => {
   const errors = validationResult(req);

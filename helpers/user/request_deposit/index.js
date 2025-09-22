@@ -18,7 +18,7 @@ helper.info_request_deposit = async (id) => {
   await Request_deposit.findOne({
     where: { id: id },
     include: {
-      require: true,
+      required: true,
       model: Member,
       attributes: ["saldo", "biaya_admin"],
     },

@@ -58,7 +58,7 @@ class Model_r {
     ];
     sql["where"] = where;
     sql["include"] = [
-      { require: true, model: Server, attributes: ["kode", "name"] },
+      { required: true, model: Server, attributes: ["kode", "name"] },
       {
         required: true,
         model: Kategori,

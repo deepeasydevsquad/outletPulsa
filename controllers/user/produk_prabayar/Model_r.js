@@ -469,7 +469,7 @@ class Model_r {
       await Produk_prabayar.findOne({
         where: { id: body.id },
         include: {
-          require: true,
+          required: true,
           model: Operator,
           attributes: ["kategori_id"],
         },

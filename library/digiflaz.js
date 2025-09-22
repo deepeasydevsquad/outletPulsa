@@ -14,8 +14,7 @@ class Digiflaz {
     this.url_price_list = this.url + "price-list";
     this.url_deposit = this.url + "deposit";
     this.url_transaction = this.url + "transaction";
-    this.url_ping_endpoin =
-      this.url + "report/hooks/" + this.webhook_id + "/pings";
+    this.url_ping_endpoin = this.url + "report/hooks/" + this.webhook_id + "/pings";
   }
 
   async sign_md5_cek_saldo() {

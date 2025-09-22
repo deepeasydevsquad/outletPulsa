@@ -29,7 +29,7 @@ helper.info = async (id) => {
   await Testing_digiflaz.findOne({
     where: { id: id },
     include: {
-      require: true,
+      required: true,
       model: Digiflazz_seller,
     },
   }).then(async (val) => {

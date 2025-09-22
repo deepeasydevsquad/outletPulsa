@@ -111,7 +111,7 @@ class Model_r {
           attributes: ["id", "kode", "name"],
           where: { id: { [Op.in]: ids } },
           include: {
-            require: true,
+            required: true,
             model: Kategori,
             attributes: ["kode", "name"],
           },
